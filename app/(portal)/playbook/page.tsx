@@ -1,82 +1,36 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { getAllPlaybookPages } from '@/lib/sanity/queries'
+import EmptyState from '@/components/ui/EmptyState'
 
-import { useState } from 'react'
-import Card from '@/components/ui/Card'
-import Skeleton from '@/components/ui/Skeleton'
+export const revalidate = 60
 
-const sections = ['Pitching', 'ICP', 'Objections', 'FAQ', 'Competitive']
+const IconBook = () => (
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+  </svg>
+)
 
-export default function PlaybookPage() {
-  const [activeSection, setActiveSection] = useState('Pitching')
+export default async function PlaybookPage() {
+  const pages = await getAllPlaybookPages().catch(() => [])
+
+  if (pages.length > 0) {
+    redirect(`/playbook/${pages[0].slug.current}`)
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
         <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">Playbook</h1>
         <p className="mt-1 font-inter text-cabin-stone text-base">
-          Everything you need to pitch and close deals with Cabin.
+          Your complete guide to pitching and closing with Cabin.
         </p>
       </div>
-
-      <div className="flex gap-6 items-start">
-        {/* Section nav — desktop sidebar */}
-        <aside className="hidden md:block w-48 flex-shrink-0">
-          <Card hover={false} className="p-3">
-            <nav className="space-y-1">
-              {sections.map((section) => (
-                <button
-                  key={section}
-                  onClick={() => setActiveSection(section)}
-                  className={`
-                    w-full text-left px-3 py-2.5 rounded-full text-sm font-inter font-medium
-                    transition-colors duration-150
-                    ${activeSection === section
-                      ? 'bg-cabin-maroon text-white'
-                      : 'text-cabin-stone hover:bg-cabin-mauve hover:text-cabin-charcoal'
-                    }
-                  `}
-                >
-                  {section}
-                </button>
-              ))}
-            </nav>
-          </Card>
-        </aside>
-
-        {/* Mobile section dropdown */}
-        <div className="md:hidden w-full">
-          <select
-            value={activeSection}
-            onChange={(e) => setActiveSection(e.target.value)}
-            className="w-full rounded-full px-4 py-2.5 text-sm font-inter border border-cabin-stone/30 bg-white text-cabin-charcoal focus:outline-none focus:border-cabin-maroon"
-          >
-            {sections.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Content area */}
-        <Card className="flex-1">
-          <div className="mb-4">
-            <Skeleton className="h-8 w-1/3 mb-2" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-          <div className="space-y-3">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-4/5" />
-          </div>
-          <div className="mt-6 space-y-3">
-            <Skeleton className="h-6 w-1/4 mb-3" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
-        </Card>
-      </div>
+      <EmptyState
+        icon={<IconBook />}
+        heading="Playbook coming soon"
+        subtext="Cabin's scout playbook is being prepared. Check back soon."
+      />
     </div>
   )
 }

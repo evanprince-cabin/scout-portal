@@ -23,7 +23,8 @@ export async function getAllReports() {
 export async function getReportBySlug(slug: string) {
   return sanityClient.fetch(
     `*[_type == "report" && slug.current == $slug][0] {
-      title, slug, publishedDate, coverImage, summary, body, pdfDownload
+      title, slug, publishedDate, coverImage, summary, body,
+      pdfDownload { asset-> { url } }
     }`,
     { slug }
   )
@@ -68,17 +69,18 @@ export async function getPlaybookPageBySlug(slug: string) {
 }
 
 export async function getAllAssets(category?: string) {
+  const projection = `{
+    title, description, category, videoUrl, copyableText,
+    file { asset-> { url, originalFilename } },
+    thumbnail
+  }`
   if (category) {
     return sanityClient.fetch(
-      `*[_type == "asset" && category == $category] {
-        title, description, category, file, videoUrl, thumbnail, copyableText
-      }`,
+      `*[_type == "asset" && category == $category] ${projection}`,
       { category }
     )
   }
-  return sanityClient.fetch(`*[_type == "asset"] {
-    title, description, category, file, videoUrl, thumbnail, copyableText
-  }`)
+  return sanityClient.fetch(`*[_type == "asset"] ${projection}`)
 }
 
 export async function getAllEvents() {

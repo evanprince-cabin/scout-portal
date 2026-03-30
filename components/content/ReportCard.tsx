@@ -18,27 +18,27 @@ export default function ReportCard({ report }: { report: Report }) {
   })
 
   return (
-    <div className="bg-cabin-maroon rounded-2xl overflow-hidden shadow-sm">
-      {coverImage && (
-        <div className="h-48 w-full overflow-hidden">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="h-48 w-full bg-cabin-linen overflow-hidden">
+        {coverImage ? (
           <img
             src={urlFor(coverImage)}
             alt={title}
-            className="w-full h-full object-cover opacity-80"
+            className="w-full h-full object-cover"
           />
-        </div>
-      )}
+        ) : null}
+      </div>
       <div className="p-6">
-        <p className="text-xs font-inter font-medium text-white/60 uppercase tracking-wide mb-2">
+        <p className="text-xs font-inter font-medium text-cabin-stone uppercase tracking-wide mb-2">
           {formattedDate}
         </p>
-        <h3 className="font-geist font-bold text-white text-xl leading-snug mb-3">{title}</h3>
+        <h3 className="font-geist font-bold text-cabin-charcoal text-xl leading-snug mb-3">{title}</h3>
         {summary && (
-          <p className="text-sm font-inter text-white/75 line-clamp-3 mb-5">{summary}</p>
+          <p className="text-sm font-inter text-cabin-stone line-clamp-3 mb-5">{summary}</p>
         )}
         <Link
           href={`/reports/${slug.current}`}
-          className="inline-flex items-center text-sm font-inter font-semibold text-cabin-gold hover:text-white transition-colors duration-150"
+          className="inline-flex items-center text-sm font-inter font-semibold text-cabin-maroon hover:text-cabin-charcoal transition-colors duration-150"
         >
           Read Report →
         </Link>
