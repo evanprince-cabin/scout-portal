@@ -1,78 +1,153 @@
-import Card from '@/components/ui/Card'
-import Skeleton from '@/components/ui/Skeleton'
-import Button from '@/components/ui/Button'
+import { currentUser } from '@clerk/nextjs/server'
+import { getDashboardData } from '@/lib/sanity/queries'
+import { getReferralStats } from '@/lib/supabase/referrals'
+import StatCard from '@/components/dashboard/StatCard'
+import QuickActions from '@/components/dashboard/QuickActions'
+import ReportCard from '@/components/content/ReportCard'
+import ArticleCard from '@/components/content/ArticleCard'
+import EventCard from '@/components/content/EventCard'
+import EmptyState from '@/components/ui/EmptyState'
 
-function StatCard({ label }: { label: string }) {
-  return (
-    <Card className="flex flex-col gap-2">
-      <p className="text-sm font-inter text-cabin-stone">{label}</p>
-      <Skeleton className="h-9 w-16" />
-    </Card>
-  )
-}
+export const dynamic = 'force-dynamic'
 
-export default function DashboardPage() {
+const IconSend = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+)
+
+const IconActivity = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+)
+
+const IconTrophy = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 010-5H6" />
+    <path d="M18 9h1.5a2.5 2.5 0 000-5H18" />
+    <path d="M4 22h16" />
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+    <path d="M18 2H6v7a6 6 0 0012 0V2z" />
+  </svg>
+)
+
+export default async function DashboardPage() {
+  const user = await currentUser()
+  const firstName = user?.firstName ?? 'Scout'
+
+  const [stats, dashboardData] = await Promise.all([
+    user?.id
+      ? getReferralStats(user.id).catch(() => ({ submitted: 0, active: 0, closedWon: 0 }))
+      : Promise.resolve({ submitted: 0, active: 0, closedWon: 0 }),
+    getDashboardData().catch(() => ({
+      latestReport: null,
+      recentArticles: [],
+      upcomingEvents: [],
+    })),
+  ])
+
+  const latestReport = dashboardData?.latestReport ?? null
+  const recentArticles = dashboardData?.recentArticles ?? []
+  const upcomingEvents = dashboardData?.upcomingEvents ?? []
+
   return (
-    <div className="space-y-8">
-      {/* Page header */}
+    <div className="space-y-10">
+      {/* Header */}
       <div>
         <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">
-          Welcome to Cabin Scout Portal
+          Hey {firstName} 👋
         </h1>
         <p className="mt-1 font-inter text-cabin-stone text-base">
-          Your hub for referrals, resources, and everything Cabin.
+          Here&apos;s what&apos;s happening at Cabin.
         </p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard label="Referrals Submitted" />
-        <StatCard label="Active" />
-        <StatCard label="Closed Won" />
+        <StatCard
+          label="Referrals Submitted"
+          value={stats.submitted}
+          icon={<IconSend />}
+        />
+        <StatCard
+          label="Referrals Active"
+          value={stats.active}
+          icon={<IconActivity />}
+        />
+        <StatCard
+          label="Closed Won"
+          value={stats.closedWon}
+          icon={<IconTrophy />}
+        />
       </div>
 
-      {/* Content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Latest report */}
-        <Card className="lg:col-span-1">
-          <p className="text-xs font-inter font-medium text-cabin-stone uppercase tracking-wide mb-3">
-            Latest Report
-          </p>
-          <Skeleton className="h-40 mb-4" />
-          <Skeleton className="h-5 w-3/4 mb-2" />
-          <Skeleton className="h-4 w-1/2" />
-        </Card>
+      {/* Latest Report */}
+      <section>
+        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
+          Latest Report
+        </h2>
+        {latestReport ? (
+          <ReportCard report={latestReport} />
+        ) : (
+          <div className="bg-cabin-maroon rounded-2xl p-10 text-center">
+            <p className="font-geist font-semibold text-white text-lg">
+              No reports published yet
+            </p>
+            <p className="mt-1 font-inter text-white/60 text-sm">
+              Check back soon — Cabin publishes monthly scout reports.
+            </p>
+          </div>
+        )}
+      </section>
 
-        {/* Recent articles */}
-        <Card className="lg:col-span-2">
-          <p className="text-xs font-inter font-medium text-cabin-stone uppercase tracking-wide mb-3">
-            Recent Articles
-          </p>
-          <div className="space-y-4">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="flex gap-4 items-start">
-                <Skeleton className="h-14 w-14 flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              </div>
+      {/* Recent Articles */}
+      <section>
+        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
+          Latest from Cabin
+        </h2>
+        {recentArticles.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {recentArticles.map((article: any) => (
+              <ArticleCard key={article.slug.current} article={article} />
             ))}
           </div>
-        </Card>
-      </div>
+        ) : (
+          <EmptyState
+            heading="No articles yet"
+            subtext="Cabin's editorial content will appear here."
+          />
+        )}
+      </section>
 
-      {/* Quick actions */}
-      <Card>
-        <p className="text-xs font-inter font-medium text-cabin-stone uppercase tracking-wide mb-4">
+      {/* Upcoming Events */}
+      <section>
+        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
+          Upcoming Events
+        </h2>
+        {upcomingEvents.length > 0 ? (
+          <div className="space-y-4">
+            {upcomingEvents.map((event: any) => (
+              <EventCard key={event.slug.current} event={event} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            heading="No upcoming events"
+            subtext="Cabin webinars and events will be listed here."
+          />
+        )}
+      </section>
+
+      {/* Quick Actions */}
+      <section>
+        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
           Quick Actions
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="primary">Submit a Referral</Button>
-          <Button variant="secondary">Browse Assets</Button>
-          <Button variant="ghost">Read the Playbook</Button>
-        </div>
-      </Card>
+        </h2>
+        <QuickActions />
+      </section>
     </div>
   )
 }
