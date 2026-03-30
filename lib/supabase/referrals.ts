@@ -1,14 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
-
-function createServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function getReferralStats(scoutId: string) {
-  const supabase = createServiceClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('referrals')
