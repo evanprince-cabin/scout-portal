@@ -8,7 +8,7 @@ export default function Card({ children, className = '', hover = true }: CardPro
   return (
     <div
       className={`
-        bg-white rounded-2xl p-6 shadow-sm
+        bg-white rounded-2xl p-6 shadow-sm border border-cabin-stone/20
         ${hover ? 'hover:shadow-md transition-shadow duration-200' : ''}
         ${className}
       `}

@@ -35,7 +35,7 @@ export default function ArticleCard({ article }: { article: Article }) {
   return (
     <Link
       href={`/articles/${slug.current}`}
-      className="group block bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+      className="group block bg-white rounded-2xl shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200 overflow-hidden"
     >
       <div className="relative h-40 w-full bg-cabin-linen overflow-hidden">
         {coverImage ? (

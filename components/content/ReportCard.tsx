@@ -18,7 +18,7 @@ export default function ReportCard({ report }: { report: Report }) {
   })
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200">
       <div className="h-48 w-full bg-cabin-linen overflow-hidden">
         {coverImage ? (
           <img

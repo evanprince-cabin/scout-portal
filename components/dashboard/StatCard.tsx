@@ -6,7 +6,7 @@ interface StatCardProps {
 
 export default function StatCard({ label, value, icon }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm relative">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-cabin-stone/20 relative">
       {icon && (
         <div className="absolute top-6 right-6 text-cabin-stone opacity-40">
           {icon}

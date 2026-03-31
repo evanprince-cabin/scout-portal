@@ -4,33 +4,61 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { UserButton, useUser } from '@clerk/nextjs'
+import {
+  LayoutDashboard,
+  FileText,
+  BookOpen,
+  Map,
+  FolderOpen,
+  Calendar,
+  Send,
+} from 'lucide-react'
 
-const navLinks = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/reports', label: 'Reports' },
-  { href: '/articles', label: 'Articles' },
-  { href: '/playbook', label: 'Playbook' },
-  { href: '/assets', label: 'Assets' },
-  { href: '/events', label: 'Events' },
-  { href: '/referrals', label: 'Referrals' },
+const navSections = [
+  {
+    label: 'OVERVIEW',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'RESOURCES',
+    items: [
+      { href: '/reports', label: 'Reports', icon: FileText },
+      { href: '/articles', label: 'Articles', icon: BookOpen },
+      { href: '/playbook', label: 'Playbook', icon: Map },
+      { href: '/assets', label: 'Assets', icon: FolderOpen },
+    ],
+  },
+  {
+    label: 'COMMUNITY',
+    items: [
+      { href: '/events', label: 'Events', icon: Calendar },
+    ],
+  },
+  {
+    label: 'MY SCOUT',
+    items: [
+      { href: '/referrals', label: 'Referrals', icon: Send },
+    ],
+  },
 ]
 
-function CabinIcon() {
+function CabinArchIcon() {
   return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+    <svg width="20" height="16" viewBox="0 0 36 28" fill="none" aria-hidden="true">
       <path
-        d="M14 3L3 11V25H10V17H18V25H25V11L14 3Z"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinejoin="round"
+        d="M4 26 C4 26 4 10 18 4 C32 10 32 26 32 26"
+        stroke="#4B0214"
+        strokeWidth="2.5"
         fill="none"
+        strokeLinecap="round"
       />
-      <path
-        d="M10 25V18C10 16.343 11.343 15 13 15H15C16.657 15 18 16.343 18 18V25"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinejoin="round"
-        fill="none"
+      <line
+        x1="4" y1="26" x2="32" y2="26"
+        stroke="#4B0214"
+        strokeWidth="2.5"
+        strokeLinecap="round"
       />
     </svg>
   )
@@ -59,42 +87,52 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-5 flex items-center gap-3">
-        <CabinIcon />
-        <span className="text-white font-geist font-bold text-lg tracking-tight">Cabin Scout</span>
+      <div className="px-6 py-5 flex items-center gap-2.5 mb-6">
+        <CabinArchIcon />
+        <span className="text-cabin-charcoal font-geist font-bold text-lg tracking-tight">Cabin Scout</span>
       </div>
-      <div className="mx-4 h-px bg-white/10" />
 
-      {/* Nav */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
-        {navLinks.map(({ href, label }) => {
-          const isActive = pathname === href || pathname.startsWith(href + '/')
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onLinkClick}
-              className={`
-                flex items-center px-4 py-2.5 rounded-full text-sm font-inter font-medium transition-colors duration-150
-                ${isActive
-                  ? 'bg-white text-cabin-maroon'
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-                }
-              `}
-            >
-              {label}
-            </Link>
-          )
-        })}
+      {/* Nav sections */}
+      <nav className="flex-1 px-4 overflow-y-auto">
+        {navSections.map((section, sectionIdx) => (
+          <div key={section.label} className={sectionIdx === 0 ? 'mb-2' : 'mt-6 mb-2'}>
+            <p className="px-3 mb-1 text-xs font-medium uppercase tracking-wider text-cabin-stone/60">
+              {section.label}
+            </p>
+            <div className="space-y-1.5">
+              {section.items.map(({ href, label, icon: Icon }) => {
+                const isActive = pathname === href || pathname.startsWith(href + '/')
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={onLinkClick}
+                    className={`
+                      flex items-center gap-3 px-3 py-2 rounded-full text-sm font-inter font-medium transition-colors duration-150
+                      ${isActive
+                        ? 'bg-cabin-maroon text-white'
+                        : 'text-cabin-stone hover:bg-cabin-mauve hover:text-cabin-charcoal'
+                      }
+                    `}
+                  >
+                    <Icon
+                      size={16}
+                      className={isActive ? 'text-white' : 'text-current'}
+                    />
+                    {label}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      <div className="mx-4 h-px bg-white/10" />
-
-      {/* User */}
-      <div className="px-6 py-5 flex items-center gap-3">
+      {/* User area */}
+      <div className="border-t border-cabin-stone/15 mx-4 mt-4 pt-4 px-2 pb-5 flex items-center gap-3">
         <UserButton afterSignOutUrl="/sign-in" />
         {user && (
-          <span className="text-sm font-inter text-white/70 truncate">
+          <span className="text-sm font-inter text-cabin-stone truncate">
             {user.firstName ?? user.primaryEmailAddress?.emailAddress}
           </span>
         )}
@@ -109,19 +147,19 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 bg-cabin-maroon z-30">
+      <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 bg-cabin-linen border-r border-cabin-stone/15 z-30">
         <SidebarContent />
       </aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-cabin-maroon px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <CabinIcon />
-          <span className="text-white font-geist font-bold text-base tracking-tight">Cabin Scout</span>
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-cabin-linen border-b border-cabin-stone/15 px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <CabinArchIcon />
+          <span className="text-cabin-charcoal font-geist font-bold text-base tracking-tight">Cabin Scout</span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}
-          className="text-white p-1.5"
+          className="text-cabin-stone p-1.5"
           aria-label="Open menu"
         >
           <HamburgerIcon />
@@ -135,10 +173,10 @@ export default function Sidebar() {
             className="fixed inset-0 bg-black/50"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative w-72 bg-cabin-maroon flex flex-col h-full z-50">
+          <aside className="relative w-72 bg-cabin-linen border-r border-cabin-stone/15 flex flex-col h-full z-50">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-white/70 hover:text-white"
+              className="absolute top-4 right-4 text-cabin-stone hover:text-cabin-charcoal"
               aria-label="Close menu"
             >
               <CloseIcon />

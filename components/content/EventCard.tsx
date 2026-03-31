@@ -38,7 +38,7 @@ export default function EventCard({ event }: { event: Event }) {
       : 'Virtual'
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col sm:flex-row sm:items-start gap-5">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">

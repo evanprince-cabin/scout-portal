@@ -62,7 +62,7 @@ function AssetCard({ asset }: { asset: Asset }) {
   const embedUrl = videoUrl ? getEmbedUrl(videoUrl) : null
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200 flex flex-col">
       {/* Thumbnail / Video embed */}
       {embedUrl ? (
         <div className="relative w-full flex-shrink-0" style={{ paddingBottom: '56.25%' }}>
