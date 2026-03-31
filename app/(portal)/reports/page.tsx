@@ -35,8 +35,8 @@ export default async function ReportsPage() {
       ) : (
         <EmptyState
           icon={<IconReport />}
-          heading="No reports yet"
-          subtext="Cabin publishes monthly reports — check back soon."
+          heading="No reports published yet."
+          subtext="Check back soon."
         />
       )}
     </div>

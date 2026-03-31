@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Toast from '@/components/ui/Toast'
+import EmptyState from '@/components/ui/EmptyState'
 import Skeleton from '@/components/ui/Skeleton'
+import { useToast } from '@/lib/toast'
 
 // ---- Types ----
 
@@ -127,7 +128,7 @@ function ReferralForm({ onSuccess }: { onSuccess: () => void }) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitting, setSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const { showToast } = useToast()
 
   function set(field: keyof FormState) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -160,22 +161,21 @@ function ReferralForm({ onSuccess }: { onSuccess: () => void }) {
       if (!res.ok) throw new Error()
       setForm(EMPTY_FORM)
       setErrors({})
-      setToast({ message: "Referral submitted! We'll be in touch.", type: 'success' })
+      showToast("Referral submitted! We'll be in touch.", 'success')
       onSuccess()
     } catch {
-      setToast({ message: 'Something went wrong. Please try again.', type: 'error' })
+      showToast('Something went wrong. Please try again.', 'error')
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <>
-      <Card className="max-w-2xl">
-        <h2 className="font-geist font-semibold text-lg text-cabin-charcoal mb-6">
-          Submit a Referral
-        </h2>
-        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+    <Card className="w-full max-w-2xl">
+      <h2 className="font-geist font-semibold text-lg text-cabin-charcoal mb-6">
+        Submit a Referral
+      </h2>
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <FieldWrapper label="Prospect First & Last Name" required error={errors.prospect_name}>
               <input
@@ -259,12 +259,7 @@ function ReferralForm({ onSuccess }: { onSuccess: () => void }) {
             {submitting ? 'Submitting...' : 'Submit Referral'}
           </Button>
         </form>
-      </Card>
-
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />
-      )}
-    </>
+    </Card>
   )
 }
 
@@ -305,14 +300,10 @@ function ReferralTable({ refreshKey }: { refreshKey: number }) {
         </Card>
       ) : referrals.length === 0 ? (
         <Card hover={false}>
-          <div className="py-12 text-center space-y-1">
-            <p className="font-inter text-cabin-stone">
-              No referrals yet. Submit your first one above.
-            </p>
-            <p className="font-inter text-cabin-stone/60 text-sm">
-              Your submitted referrals and their statuses will appear here.
-            </p>
-          </div>
+          <EmptyState
+            heading="No referrals yet — submit your first one above."
+            subtext="Your submitted referrals and their statuses will appear here."
+          />
         </Card>
       ) : (
         <>

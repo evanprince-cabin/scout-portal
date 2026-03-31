@@ -28,7 +28,7 @@ export default async function PlaybookPage() {
       </div>
       <EmptyState
         icon={<IconBook />}
-        heading="Playbook coming soon"
+        heading="No playbook content yet."
         subtext="Cabin's scout playbook is being prepared. Check back soon."
       />
     </div>

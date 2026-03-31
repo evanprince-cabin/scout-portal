@@ -62,7 +62,7 @@ interface RichTextProps {
 export default function RichText({ value, className = '' }: RichTextProps) {
   if (!value?.length) return null
   return (
-    <div className={className}>
+    <div className={`prose max-w-none ${className}`}>
       <PortableText value={value} components={components} />
     </div>
   )

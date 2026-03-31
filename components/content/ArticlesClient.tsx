@@ -125,8 +125,8 @@ export default function ArticlesClient({ articles }: Props) {
       ) : (
         <EmptyState
           icon={<IconArticle />}
-          heading={`No ${activeCategory} articles yet`}
-          subtext="Check back soon for new content in this category."
+          heading={activeCategory === 'All' ? 'No articles published yet.' : 'No articles in this category yet.'}
+          subtext="Check back soon for new content."
         />
       )}
     </div>

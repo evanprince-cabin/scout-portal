@@ -164,7 +164,7 @@ export default function AssetsClient({ assets }: { assets: Asset[] }) {
       ) : (
         <EmptyState
           icon={<IconAsset />}
-          heading={activeCategory === 'All' ? 'No assets yet' : `No ${activeCategory} assets yet`}
+          heading={activeCategory === 'All' ? 'No assets yet.' : 'No assets in this category yet.'}
           subtext="Sales enablement materials will appear here as they're added."
         />
       )}

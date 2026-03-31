@@ -74,48 +74,53 @@ export default function EventsClient({ upcoming, past }: Props) {
         ) : (
           <EmptyState
             icon={<IconCalendar />}
-            heading="No upcoming events"
-            subtext={activeType === 'All' ? "Cabin events will be listed here." : `No upcoming ${activeType} events right now.`}
+            heading="No upcoming events. Check back soon."
+            subtext={activeType !== 'All' ? `No upcoming ${activeType} events right now.` : undefined}
           />
         )}
       </section>
 
       {/* Past events toggle */}
-      {past.length > 0 && (
-        <section>
-          <button
-            onClick={() => setPastOpen(prev => !prev)}
-            className="flex items-center gap-2 font-geist font-semibold text-cabin-charcoal text-lg hover:text-cabin-maroon transition-colors duration-150"
+      <section>
+        <button
+          onClick={() => setPastOpen(prev => !prev)}
+          className="flex items-center gap-2 font-geist font-semibold text-cabin-charcoal text-lg hover:text-cabin-maroon transition-colors duration-150"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            className={`transition-transform duration-200 ${pastOpen ? 'rotate-180' : ''}`}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              className={`transition-transform duration-200 ${pastOpen ? 'rotate-180' : ''}`}
-            >
-              <path d="M4 6L9 11L14 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Past Events
+            <path d="M4 6L9 11L14 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Past Events
+          {past.length > 0 && (
             <span className="text-sm font-inter font-normal text-cabin-stone">({past.length})</span>
-          </button>
-
-          {pastOpen && (
-            <div className="mt-4 space-y-4">
-              {filteredPast.length > 0 ? (
-                filteredPast.map(event => (
-                  <EventCard key={event.slug.current} event={event} />
-                ))
-              ) : (
-                <EmptyState
-                  heading={`No past ${activeType} events`}
-                  subtext="Try switching the filter to see more events."
-                />
-              )}
-            </div>
           )}
-        </section>
-      )}
+        </button>
+
+        {pastOpen && (
+          <div className="mt-4 space-y-4">
+            {filteredPast.length > 0 ? (
+              filteredPast.map(event => (
+                <EventCard key={event.slug.current} event={event} />
+              ))
+            ) : past.length === 0 ? (
+              <EmptyState
+                heading="No past events yet."
+                subtext="Past events will appear here."
+              />
+            ) : (
+              <EmptyState
+                heading={`No past ${activeType} events.`}
+                subtext="Try switching the filter to see more events."
+              />
+            )}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
