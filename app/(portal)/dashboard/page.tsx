@@ -1,44 +1,36 @@
+import Link from 'next/link'
 import { currentUser } from '@clerk/nextjs/server'
+import { FileText, Send, Download } from 'lucide-react'
 import { getDashboardData } from '@/lib/sanity/queries'
 import { getReferralStats } from '@/lib/supabase/referrals'
-import StatCard from '@/components/dashboard/StatCard'
-import QuickActions from '@/components/dashboard/QuickActions'
-import ReportCard from '@/components/content/ReportCard'
-import ArticleCard from '@/components/content/ArticleCard'
-import EventCard from '@/components/content/EventCard'
-import EmptyState from '@/components/ui/EmptyState'
+import { urlFor } from '@/lib/sanity/image'
+import Badge from '@/components/ui/Badge'
+import ShareButton from '@/components/ui/ShareButton'
 
 export const dynamic = 'force-dynamic'
 
-const IconSend = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </svg>
-)
+type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
 
-const IconActivity = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-  </svg>
-)
+const eventTypeVariant: Record<string, BadgeVariant> = {
+  Webinar:     'sky',
+  'In-Person': 'grass',
+  Workshop:    'gold',
+  Conference:  'indigo',
+}
 
-const IconTrophy = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 9H4.5a2.5 2.5 0 010-5H6" />
-    <path d="M18 9h1.5a2.5 2.5 0 000-5H18" />
-    <path d="M4 22h16" />
-    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-    <path d="M18 2H6v7a6 6 0 0012 0V2z" />
-  </svg>
-)
+const categoryVariant: Record<string, BadgeVariant> = {
+  Strategy:    'maroon',
+  Engineering: 'indigo',
+  Design:      'sky',
+  AI:          'flame',
+  Salesforce:  'grass',
+}
 
 export default async function DashboardPage() {
   const user = await currentUser()
   const firstName = user?.firstName ?? 'Scout'
 
-  const [stats, dashboardData] = await Promise.all([
+  const [_stats, dashboardData] = await Promise.all([
     user?.id
       ? getReferralStats(user.id).catch(() => ({ submitted: 0, active: 0, closedWon: 0 }))
       : Promise.resolve({ submitted: 0, active: 0, closedWon: 0 }),
@@ -49,105 +41,240 @@ export default async function DashboardPage() {
     })),
   ])
 
-  const latestReport = dashboardData?.latestReport ?? null
   const recentArticles = dashboardData?.recentArticles ?? []
   const upcomingEvents = dashboardData?.upcomingEvents ?? []
+  const featuredEvent = upcomingEvents[0] ?? null
+
+  // Pre-compute event display values
+  const eventVariant: BadgeVariant = featuredEvent
+    ? (eventTypeVariant[featuredEvent.eventType] ?? 'stone')
+    : 'stone'
+  const eventLocationLabel = featuredEvent
+    ? (featuredEvent.location &&
+        featuredEvent.location.trim().toLowerCase() !== 'virtual' &&
+        featuredEvent.location.trim() !== ''
+          ? featuredEvent.location
+          : 'Virtual')
+    : ''
+  const eventFormattedDate = featuredEvent
+    ? new Date(featuredEvent.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : ''
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <div>
-        <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">
-          Hey {firstName} 👋
-        </h1>
-        <p className="mt-1 font-inter text-cabin-stone text-base">
-          Here&apos;s what&apos;s happening at Cabin.
-        </p>
+    <div className="w-full">
+      <div className="w-full max-w-full sm:max-w-[75%] mx-auto px-4 sm:px-0">
+
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="font-geist font-bold text-4xl text-cabin-charcoal">
+            Hey {firstName} 👋
+          </h1>
+          <p className="mt-2 font-inter text-cabin-stone text-base">
+            Here&apos;s what&apos;s happening at Cabin.
+          </p>
+        </div>
+
+        <div className="space-y-10">
+
+          {/* Quick Actions */}
+          <section>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* View Latest Report */}
+              <Link
+                href="/reports"
+                className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
+              >
+                <div className="inline-flex items-center justify-center bg-cabin-sky/20 p-2 rounded-xl flex-shrink-0">
+                  <FileText size={24} className="text-cabin-indigo" />
+                </div>
+                <div>
+                  <p className="font-geist font-semibold text-cabin-charcoal text-base">
+                    View Latest Report
+                  </p>
+                  <p className="mt-0.5 font-inter text-cabin-stone text-sm">
+                    Read the most recent scout report
+                  </p>
+                </div>
+              </Link>
+
+              {/* Send a Referral */}
+              <Link
+                href="/referrals"
+                className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
+              >
+                <div className="inline-flex items-center justify-center bg-cabin-flame/10 p-2 rounded-xl flex-shrink-0">
+                  <Send size={24} className="text-cabin-flame" />
+                </div>
+                <div>
+                  <p className="font-geist font-semibold text-cabin-charcoal text-base">
+                    Send a Referral
+                  </p>
+                  <p className="mt-0.5 font-inter text-cabin-stone text-sm">
+                    Submit a new referral to the sales team
+                  </p>
+                </div>
+              </Link>
+
+              {/* Download an Asset */}
+              <Link
+                href="/assets"
+                className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
+              >
+                <div className="inline-flex items-center justify-center bg-cabin-gold/20 p-2 rounded-xl flex-shrink-0">
+                  <Download size={24} style={{ color: '#B8860B' }} />
+                </div>
+                <div>
+                  <p className="font-geist font-semibold text-cabin-charcoal text-base">
+                    Download an Asset
+                  </p>
+                  <p className="mt-0.5 font-inter text-cabin-stone text-sm">
+                    Browse and download sales materials
+                  </p>
+                </div>
+              </Link>
+            </div>
+          </section>
+
+          {/* Upcoming Events */}
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-geist font-semibold text-cabin-charcoal text-lg">
+                Upcoming Events
+              </h2>
+              <Link
+                href="/events"
+                className="font-inter text-cabin-maroon text-sm hover:underline"
+              >
+                View all events →
+              </Link>
+            </div>
+
+            {featuredEvent ? (
+              <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <Badge variant={eventVariant}>{featuredEvent.eventType}</Badge>
+                      <span className="inline-flex items-center text-xs font-inter text-cabin-stone bg-cabin-mauve px-2.5 py-1 rounded-full">
+                        {eventLocationLabel}
+                      </span>
+                    </div>
+                    <Link href={`/events/${featuredEvent.slug.current}`}>
+                      <h3 className="font-geist font-semibold text-cabin-charcoal text-lg leading-snug mb-1 hover:text-cabin-maroon transition-colors duration-150">
+                        {featuredEvent.title}
+                      </h3>
+                    </Link>
+                    <p className="text-sm font-inter text-cabin-stone mb-2">
+                      {eventFormattedDate}
+                    </p>
+                    {featuredEvent.summary && (
+                      <p className="text-sm font-inter text-cabin-stone line-clamp-2">
+                        {featuredEvent.summary}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-row gap-2 flex-shrink-0 sm:pt-1">
+                    <ShareButton href={`/events/${featuredEvent.slug.current}`} label="Share Event" />
+                    {featuredEvent.registrationUrl && (
+                      <a
+                        href={featuredEvent.registrationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
+                      >
+                        Register →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="font-inter text-cabin-stone text-sm">
+                No upcoming events scheduled.
+              </p>
+            )}
+          </section>
+
+          {/* Recent Articles */}
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-geist font-semibold text-cabin-charcoal text-lg">
+                Recent Articles
+              </h2>
+              <Link
+                href="/articles"
+                className="font-inter text-cabin-maroon text-sm hover:underline"
+              >
+                View all articles →
+              </Link>
+            </div>
+
+            {recentArticles.length > 0 ? (
+              <div>
+                {recentArticles.map((article: any, index: number) => {
+                  const variant = categoryVariant[article.category] ?? 'stone'
+                  const formattedDate = new Date(article.publishedDate).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                  const isLast = index === recentArticles.length - 1
+                  return (
+                    <Link
+                      key={article.slug.current}
+                      href={`/articles/${article.slug.current}`}
+                      className={`flex gap-4 items-start py-4 transition-all duration-150 block ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
+                    >
+                      {/* Cover image */}
+                      <div className="flex-shrink-0 w-32 h-24 rounded-xl overflow-hidden bg-cabin-mauve">
+                        {article.coverImage && (
+                          <img
+                            src={urlFor(article.coverImage)}
+                            alt={article.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+
+                      {/* Article info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1.5">
+                          {article.title}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs font-inter text-cabin-stone mb-2">
+                          <span>{formattedDate}</span>
+                          <span>·</span>
+                          <span>5 min read</span>
+                          <span>·</span>
+                          <Badge variant={variant}>{article.category}</Badge>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 rounded-full bg-cabin-sky flex items-center justify-center flex-shrink-0">
+                            <span className="text-cabin-indigo font-geist font-bold leading-none" style={{ fontSize: '9px' }}>
+                              CN
+                            </span>
+                          </div>
+                          <span className="font-inter text-cabin-stone text-sm">Cabin</span>
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="font-inter text-cabin-stone text-sm">
+                No articles published yet.
+              </p>
+            )}
+          </section>
+
+        </div>
       </div>
-
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard
-          label="Referrals Submitted"
-          value={stats.submitted}
-          icon={<IconSend />}
-        />
-        <StatCard
-          label="Referrals Active"
-          value={stats.active}
-          icon={<IconActivity />}
-        />
-        <StatCard
-          label="Closed Won"
-          value={stats.closedWon}
-          icon={<IconTrophy />}
-        />
-      </div>
-
-      {/* Latest Report */}
-      <section>
-        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
-          Latest Report
-        </h2>
-        {latestReport ? (
-          <ReportCard report={latestReport} />
-        ) : (
-          <div className="bg-cabin-maroon rounded-2xl p-10 text-center">
-            <p className="font-geist font-semibold text-white text-lg">
-              No reports published yet
-            </p>
-            <p className="mt-1 font-inter text-white/60 text-sm">
-              Check back soon — Cabin publishes monthly scout reports.
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* Recent Articles */}
-      <section>
-        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
-          Latest from Cabin
-        </h2>
-        {recentArticles.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {recentArticles.map((article: any) => (
-              <ArticleCard key={article.slug.current} article={article} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            heading="No articles yet"
-            subtext="Cabin's editorial content will appear here."
-          />
-        )}
-      </section>
-
-      {/* Upcoming Events */}
-      <section>
-        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
-          Upcoming Events
-        </h2>
-        {upcomingEvents.length > 0 ? (
-          <div className="space-y-4">
-            {upcomingEvents.map((event: any) => (
-              <EventCard key={event.slug.current} event={event} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            heading="No upcoming events"
-            subtext="Cabin webinars and events will be listed here."
-          />
-        )}
-      </section>
-
-      {/* Quick Actions */}
-      <section>
-        <h2 className="font-geist font-semibold text-cabin-charcoal text-xl mb-4">
-          Quick Actions
-        </h2>
-        <QuickActions />
-      </section>
     </div>
   )
 }
