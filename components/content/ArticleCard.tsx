@@ -19,10 +19,11 @@ interface Article {
   category: string
   summary?: string
   coverImage?: object
+  featured?: boolean
 }
 
 export default function ArticleCard({ article }: { article: Article }) {
-  const { title, slug, publishedDate, category, coverImage } = article
+  const { title, slug, publishedDate, category, coverImage, featured } = article
   const variant = categoryVariant[category] ?? 'stone'
 
   const formattedDate = new Date(publishedDate).toLocaleDateString('en-US', {
@@ -36,7 +37,7 @@ export default function ArticleCard({ article }: { article: Article }) {
       href={`/articles/${slug.current}`}
       className="group block bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
     >
-      <div className="h-40 w-full bg-cabin-linen overflow-hidden">
+      <div className="relative h-40 w-full bg-cabin-linen overflow-hidden">
         {coverImage ? (
           <img
             src={urlFor(coverImage)}
@@ -45,6 +46,11 @@ export default function ArticleCard({ article }: { article: Article }) {
           />
         ) : (
           <div className="w-full h-full bg-cabin-linen" />
+        )}
+        {featured && (
+          <span className="absolute top-3 left-3 z-10 bg-cabin-gold text-cabin-charcoal text-xs font-inter font-semibold px-3 py-1 rounded-full">
+            Featured
+          </span>
         )}
       </div>
       <div className="p-5">

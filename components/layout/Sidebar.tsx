@@ -114,14 +114,14 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-cabin-maroon px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-cabin-maroon px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <CabinIcon />
           <span className="text-white font-geist font-bold text-base tracking-tight">Cabin Scout</span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}
-          className="text-white p-1"
+          className="text-white p-1.5"
           aria-label="Open menu"
         >
           <HamburgerIcon />

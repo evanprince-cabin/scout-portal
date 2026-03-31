@@ -38,11 +38,16 @@ export default function ArticlesClient({ articles }: Props) {
   const featuredArticle = articles.find(a => a.featured) ?? null
   const nonFeatured = articles.filter(a => a !== featuredArticle)
 
+  // Hero shows on "All" or when the featured article's category matches the active filter
+  const showHero = featuredArticle && (
+    activeCategory === 'All' || featuredArticle.category === activeCategory
+  )
+
   const filteredGrid = activeCategory === 'All'
     ? nonFeatured
     : nonFeatured.filter(a => a.category === activeCategory)
 
-  // If a category is selected that matches the featured article, include it in the grid
+  // Include featured in the grid when its category is filtered (but not on "All" — it's in the hero)
   const filteredWithFeatured = activeCategory !== 'All' && featuredArticle?.category === activeCategory
     ? [featuredArticle, ...filteredGrid]
     : filteredGrid
@@ -55,8 +60,25 @@ export default function ArticlesClient({ articles }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Featured hero — only shown on "All" */}
-      {activeCategory === 'All' && featuredArticle && (
+      {/* Category filter */}
+      <div className="flex flex-wrap gap-2">
+        {CATEGORIES.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-4 py-2 rounded-full text-sm font-inter font-medium transition-colors duration-150 ${
+              activeCategory === cat
+                ? 'bg-cabin-maroon text-white'
+                : 'bg-white text-cabin-stone border border-cabin-stone/30 hover:border-cabin-maroon hover:text-cabin-maroon'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Featured hero — below filters, shown on "All" or matching category */}
+      {showHero && (
         <Link
           href={`/articles/${featuredArticle.slug.current}`}
           className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
@@ -70,6 +92,9 @@ export default function ArticlesClient({ articles }: Props) {
               />
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-t from-cabin-charcoal/70 to-transparent" />
+            <span className="absolute top-4 left-4 z-10 bg-cabin-gold text-cabin-charcoal text-xs font-inter font-semibold px-3 py-1 rounded-full">
+              Featured
+            </span>
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <Badge variant={categoryVariant[featuredArticle.category] ?? 'stone'}>
                 {featuredArticle.category}
@@ -89,23 +114,6 @@ export default function ArticlesClient({ articles }: Props) {
           </div>
         </Link>
       )}
-
-      {/* Category filter */}
-      <div className="flex flex-wrap gap-2">
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-inter font-medium transition-colors duration-150 ${
-              activeCategory === cat
-                ? 'bg-cabin-maroon text-white'
-                : 'bg-white text-cabin-stone border border-cabin-stone/30 hover:border-cabin-maroon hover:text-cabin-maroon'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
 
       {/* Article grid */}
       {filteredWithFeatured.length > 0 ? (
