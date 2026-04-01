@@ -57,13 +57,13 @@ export default function EventCard({ event }: { event: Event }) {
             <p className="text-sm font-inter text-cabin-stone line-clamp-2">{summary}</p>
           )}
         </div>
-        <div className="flex flex-row sm:flex-col gap-2 flex-shrink-0 items-start">
+        <div className="flex flex-row gap-2 flex-shrink-0 items-center">
           {registrationUrl && (
             <a
               href={registrationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
+              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
             >
               Register →
             </a>

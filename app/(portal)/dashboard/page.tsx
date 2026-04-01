@@ -66,8 +66,7 @@ export default async function DashboardPage() {
     : ''
 
   return (
-    <div className="w-full">
-      <div className="w-full max-w-full sm:max-w-[75%] mx-auto px-4 sm:px-0">
+    <div className="space-y-8">
 
         {/* Header */}
         <div className="mb-10">
@@ -178,14 +177,14 @@ export default async function DashboardPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-row gap-2 flex-shrink-0 sm:pt-1">
+                  <div className="flex flex-row gap-2 flex-shrink-0 items-center sm:pt-1">
                     <ShareButton href={`/events/${featuredEvent.slug.current}`} label="Share Event" />
                     {featuredEvent.registrationUrl && (
                       <a
                         href={featuredEvent.registrationUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
+                        className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
                       >
                         Register →
                       </a>
@@ -274,7 +273,7 @@ export default async function DashboardPage() {
           </section>
 
         </div>
-      </div>
+
     </div>
   )
 }

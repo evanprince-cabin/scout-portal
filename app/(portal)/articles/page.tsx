@@ -9,9 +9,9 @@ export default async function ArticlesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">Insights</h1>
+        <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">Articles</h1>
         <p className="mt-1 font-inter text-cabin-stone text-base">
-          Articles and perspectives to help you pitch Cabin with confidence.
+          Insights and perspectives from the team at Cabin.
         </p>
       </div>
       <ArticlesClient articles={articles} />

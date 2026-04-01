@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -44,26 +45,6 @@ const navSections = [
   },
 ]
 
-function CabinArchIcon() {
-  return (
-    <svg width="20" height="16" viewBox="0 0 36 28" fill="none" aria-hidden="true">
-      <path
-        d="M4 26 C4 26 4 10 18 4 C32 10 32 26 32 26"
-        stroke="#4B0214"
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <line
-        x1="4" y1="26" x2="32" y2="26"
-        stroke="#4B0214"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
 function HamburgerIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -88,7 +69,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-6 py-5 flex items-center gap-2.5 mb-6">
-        <CabinArchIcon />
+        <Image src="/cabin-symbol-black.png" alt="Cabin" width={20} height={20} className="object-contain" />
         <span className="text-cabin-charcoal font-geist font-bold text-lg tracking-tight">Cabin Scout</span>
       </div>
 
@@ -154,7 +135,7 @@ export default function Sidebar() {
       {/* Mobile top bar */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-cabin-linen border-b border-cabin-stone/15 px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <CabinArchIcon />
+          <Image src="/cabin-symbol-black.png" alt="Cabin" width={20} height={20} className="object-contain" />
           <span className="text-cabin-charcoal font-geist font-bold text-base tracking-tight">Cabin Scout</span>
         </div>
         <button
