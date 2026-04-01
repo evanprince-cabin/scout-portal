@@ -8,12 +8,12 @@ import RichText from '@/components/content/RichText'
 
 export const revalidate = 60
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'webinar' | 'in-person' | 'workshop' | 'conference' | 'stone'
 const eventTypeVariant: Record<string, BadgeVariant> = {
-  Webinar:      'sky',
-  'In-Person':  'grass',
-  Workshop:     'gold',
-  Conference:   'indigo',
+  Webinar:      'webinar',
+  'In-Person':  'in-person',
+  Workshop:     'workshop',
+  Conference:   'conference',
 }
 
 export async function generateStaticParams() {

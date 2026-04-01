@@ -2,14 +2,14 @@ import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import { urlFor } from '@/lib/sanity/image'
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'strategy' | 'engineering' | 'design' | 'ai' | 'salesforce' | 'featured' | 'stone'
 
 const categoryVariant: Record<string, BadgeVariant> = {
-  Strategy:    'maroon',
-  Engineering: 'indigo',
-  Design:      'sky',
-  AI:          'flame',
-  Salesforce:  'grass',
+  Strategy:    'strategy',
+  Engineering: 'engineering',
+  Design:      'design',
+  AI:          'ai',
+  Salesforce:  'salesforce',
 }
 
 interface Article {
@@ -35,7 +35,7 @@ export default function ArticleCard({ article }: { article: Article }) {
   return (
     <Link
       href={`/articles/${slug.current}`}
-      className="group block bg-white rounded-2xl shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200 overflow-hidden"
+      className="group block bg-white rounded-2xl shadow-sm border border-cabin-stone/20 hover:shadow-md hover:border-cabin-maroon/30 transition-all duration-200 hover:-translate-y-0.5 overflow-hidden"
     >
       <div className="relative h-40 w-full bg-cabin-linen overflow-hidden">
         {coverImage ? (
@@ -48,8 +48,8 @@ export default function ArticleCard({ article }: { article: Article }) {
           <div className="w-full h-full bg-cabin-linen" />
         )}
         {featured && (
-          <span className="absolute top-3 left-3 z-10 bg-cabin-gold text-cabin-charcoal text-xs font-inter font-semibold px-3 py-1 rounded-full">
-            Featured
+          <span className="absolute top-3 left-3 z-10">
+            <Badge variant="featured">Featured</Badge>
           </span>
         )}
       </div>

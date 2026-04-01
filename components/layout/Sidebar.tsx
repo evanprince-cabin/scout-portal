@@ -19,7 +19,7 @@ const navSections = [
   {
     label: 'OVERVIEW',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
     ],
   },
   {
@@ -68,9 +68,12 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-5 flex items-center gap-2.5 mb-6">
-        <Image src="/cabin-symbol-black.png" alt="Cabin" width={20} height={20} className="object-contain" />
-        <span className="text-cabin-charcoal font-geist font-bold text-lg tracking-tight">Cabin Scout</span>
+      <div className="px-6 py-5 flex items-center gap-2 mb-6">
+        <Image src="/cabin-symbol-black.png" alt="Cabin" width={20} height={20} className="object-contain flex-shrink-0" />
+        <div className="flex items-center gap-1.5">
+          <span className="text-cabin-charcoal font-geist font-bold text-base leading-none">Cabin</span>
+          <span className="text-cabin-stone/50 font-inter font-medium text-sm tracking-widest leading-none">SCOUT</span>
+        </div>
       </div>
 
       {/* Nav sections */}
@@ -110,7 +113,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
       </nav>
 
       {/* User area */}
-      <div className="border-t border-cabin-stone/15 mx-4 mt-4 pt-4 px-2 pb-5 flex items-center gap-3">
+      <div className="mx-4 mt-4 pt-4 px-2 pb-5 flex items-center gap-3">
         <UserButton afterSignOutUrl="/sign-in" />
         {user && (
           <span className="text-sm font-inter text-cabin-stone truncate">
@@ -128,7 +131,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 bg-cabin-linen border-r border-cabin-stone/15 z-30">
+      <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 bg-cabin-linen z-30">
         <SidebarContent />
       </aside>
 

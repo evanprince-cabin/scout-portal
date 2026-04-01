@@ -19,9 +19,9 @@ export default async function PlaybookPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 page-enter">
       <div>
-        <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">Playbook</h1>
+        <h1 className="font-geist font-bold text-3xl tracking-tight text-cabin-charcoal">Playbook</h1>
         <p className="mt-1 font-inter text-cabin-stone text-base">
           Your complete guide to pitching and closing with Cabin.
         </p>

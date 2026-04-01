@@ -8,13 +8,13 @@ import { urlFor } from '@/lib/sanity/image'
 
 const CATEGORIES = ['All', 'One-Pager', 'Email Template', 'Case Study', 'Video', 'Brand'] as const
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'one-pager' | 'email-template' | 'case-study' | 'video' | 'brand' | 'stone'
 const categoryVariant: Record<string, BadgeVariant> = {
-  'One-Pager':      'maroon',
-  'Email Template': 'sky',
-  'Case Study':     'indigo',
-  'Video':          'flame',
-  'Brand':          'gold',
+  'One-Pager':      'one-pager',
+  'Email Template': 'email-template',
+  'Case Study':     'case-study',
+  'Video':          'video',
+  'Brand':          'brand',
 }
 
 interface Asset {
@@ -62,7 +62,7 @@ function AssetCard({ asset }: { asset: Asset }) {
   const embedUrl = videoUrl ? getEmbedUrl(videoUrl) : null
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200 flex flex-col">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-cabin-stone/20 hover:shadow-md hover:border-cabin-maroon/30 transition-all duration-200 hover:-translate-y-0.5 flex flex-col">
       {/* Thumbnail / Video embed */}
       {embedUrl ? (
         <div className="relative w-full flex-shrink-0" style={{ paddingBottom: '56.25%' }}>

@@ -12,12 +12,12 @@ export async function generateStaticParams() {
   return pages.map((p: any) => ({ slug: p.slug.current }))
 }
 
-const sectionVariant: Record<string, 'maroon' | 'sky' | 'gold' | 'indigo' | 'grass'> = {
-  Pitching:    'maroon',
-  ICP:         'sky',
-  Objections:  'gold',
-  FAQ:         'indigo',
-  Competitive: 'grass',
+const sectionVariant: Record<string, 'strategy' | 'salesforce' | 'workshop' | 'conference' | 'engineering' | 'stone'> = {
+  Pitching:    'strategy',
+  ICP:         'salesforce',
+  Objections:  'workshop',
+  FAQ:         'conference',
+  Competitive: 'engineering',
 }
 
 export default async function PlaybookSlugPage({ params }: { params: { slug: string } }) {

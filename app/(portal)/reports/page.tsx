@@ -18,9 +18,9 @@ export default async function ReportsPage() {
   const reports = await getAllReports().catch(() => [])
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 page-enter">
       <div>
-        <h1 className="font-geist font-bold text-3xl text-cabin-charcoal">Monthly Reports</h1>
+        <h1 className="font-geist font-bold text-3xl tracking-tight text-cabin-charcoal">Monthly Reports</h1>
         <p className="mt-1 font-inter text-cabin-stone text-base">
           Stay up to date on Cabin&apos;s growth, clients, and company landscape.
         </p>
@@ -35,8 +35,8 @@ export default async function ReportsPage() {
       ) : (
         <EmptyState
           icon={<IconReport />}
-          heading="No reports published yet."
-          subtext="Check back soon."
+          heading="No reports yet — check back soon. We publish monthly."
+          subtext=""
         />
       )}
     </div>

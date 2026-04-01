@@ -9,13 +9,13 @@ import { urlFor } from '@/lib/sanity/image'
 
 const CATEGORIES = ['All', 'Strategy', 'Engineering', 'Design', 'AI', 'Salesforce'] as const
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'strategy' | 'engineering' | 'design' | 'ai' | 'salesforce' | 'featured' | 'stone'
 const categoryVariant: Record<string, BadgeVariant> = {
-  Strategy:    'maroon',
-  Engineering: 'indigo',
-  Design:      'sky',
-  AI:          'flame',
-  Salesforce:  'grass',
+  Strategy:    'strategy',
+  Engineering: 'engineering',
+  Design:      'design',
+  AI:          'ai',
+  Salesforce:  'salesforce',
 }
 
 interface Article {
@@ -92,8 +92,8 @@ export default function ArticlesClient({ articles }: Props) {
               />
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-t from-cabin-charcoal/70 to-transparent" />
-            <span className="absolute top-4 left-4 z-10 bg-cabin-gold text-cabin-charcoal text-xs font-inter font-semibold px-3 py-1 rounded-full">
-              Featured
+            <span className="absolute top-4 left-4 z-10">
+              <Badge variant="featured">Featured</Badge>
             </span>
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <Badge variant={categoryVariant[featuredArticle.category] ?? 'stone'}>
@@ -125,8 +125,8 @@ export default function ArticlesClient({ articles }: Props) {
       ) : (
         <EmptyState
           icon={<IconArticle />}
-          heading={activeCategory === 'All' ? 'No articles published yet.' : 'No articles in this category yet.'}
-          subtext="Check back soon for new content."
+          heading={activeCategory === 'All' ? 'Nothing here yet. Good things take time.' : 'No articles in this category yet.'}
+          subtext={activeCategory === 'All' ? '' : 'Check back soon for new content.'}
         />
       )}
     </div>

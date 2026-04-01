@@ -172,6 +172,11 @@ function ReferralForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <Card className="w-full max-w-2xl">
+      <div className="border-l-4 border-cabin-flame pl-4 mb-6">
+        <p className="font-inter text-sm italic text-cabin-stone">
+          Know someone who could use Cabin&apos;s help? Send them our way — we&apos;ll take it from there.
+        </p>
+      </div>
       <h2 className="font-geist font-semibold text-lg text-cabin-charcoal mb-6">
         Submit a Referral
       </h2>
@@ -288,7 +293,7 @@ function ReferralTable({ refreshKey }: { refreshKey: number }) {
 
   return (
     <div>
-      <h2 className="font-geist font-semibold text-lg text-cabin-charcoal mb-4">Your Referrals</h2>
+      <h2 className="font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone mb-4">Your Referrals</h2>
 
       {loading ? (
         <Card hover={false}>
@@ -301,7 +306,7 @@ function ReferralTable({ refreshKey }: { refreshKey: number }) {
       ) : referrals.length === 0 ? (
         <Card hover={false}>
           <EmptyState
-            heading="No referrals yet — submit your first one above."
+            heading="No referrals yet. Who in your network could use Cabin?"
             subtext="Your submitted referrals and their statuses will appear here."
           />
         </Card>

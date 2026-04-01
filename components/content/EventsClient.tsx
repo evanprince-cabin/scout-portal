@@ -62,7 +62,7 @@ export default function EventsClient({ upcoming, past }: Props) {
 
       {/* Upcoming events */}
       <section>
-        <h2 className="font-geist font-semibold text-cabin-charcoal text-lg mb-4">
+        <h2 className="font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone mb-4">
           Upcoming Events
         </h2>
         {filteredUpcoming.length > 0 ? (
@@ -74,7 +74,7 @@ export default function EventsClient({ upcoming, past }: Props) {
         ) : (
           <EmptyState
             icon={<IconCalendar />}
-            heading="No upcoming events. Check back soon."
+            heading="No events on the calendar yet. Stay tuned."
             subtext={activeType !== 'All' ? `No upcoming ${activeType} events right now.` : undefined}
           />
         )}
@@ -84,7 +84,7 @@ export default function EventsClient({ upcoming, past }: Props) {
       <section>
         <button
           onClick={() => setPastOpen(prev => !prev)}
-          className="flex items-center gap-2 font-geist font-semibold text-cabin-charcoal text-lg hover:text-cabin-maroon transition-colors duration-150"
+          className="flex items-center gap-2 font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone hover:text-cabin-maroon transition-colors duration-150"
         >
           <svg
             width="18"

@@ -8,13 +8,13 @@ import RichText from '@/components/content/RichText'
 
 export const revalidate = 60
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'strategy' | 'engineering' | 'design' | 'ai' | 'salesforce' | 'stone'
 const categoryVariant: Record<string, BadgeVariant> = {
-  Strategy:    'maroon',
-  Engineering: 'indigo',
-  Design:      'sky',
-  AI:          'flame',
-  Salesforce:  'grass',
+  Strategy:    'strategy',
+  Engineering: 'engineering',
+  Design:      'design',
+  AI:          'ai',
+  Salesforce:  'salesforce',
 }
 
 export async function generateStaticParams() {

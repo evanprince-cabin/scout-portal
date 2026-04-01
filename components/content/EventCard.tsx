@@ -2,13 +2,13 @@ import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import ShareButton from '@/components/ui/ShareButton'
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'webinar' | 'in-person' | 'workshop' | 'conference' | 'stone'
 
 const eventTypeVariant: Record<string, BadgeVariant> = {
-  Webinar:       'sky',
-  'In-Person':   'grass',
-  Workshop:      'gold',
-  Conference:    'indigo',
+  Webinar:       'webinar',
+  'In-Person':   'in-person',
+  Workshop:      'workshop',
+  Conference:    'conference',
 }
 
 interface Event {
@@ -38,12 +38,12 @@ export default function EventCard({ event }: { event: Event }) {
       : 'Virtual'
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-cabin-stone/20 hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-cabin-stone/20 hover:shadow-md hover:border-cabin-maroon/30 transition-all duration-200 hover:-translate-y-0.5">
       <div className="flex flex-col sm:flex-row sm:items-start gap-5">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <Badge variant={variant}>{eventType}</Badge>
-            <span className="inline-flex items-center text-xs font-inter text-cabin-stone bg-cabin-mauve px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
               {locationLabel}
             </span>
           </div>

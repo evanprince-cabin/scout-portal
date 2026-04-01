@@ -9,21 +9,21 @@ import ShareButton from '@/components/ui/ShareButton'
 
 export const dynamic = 'force-dynamic'
 
-type BadgeVariant = 'maroon' | 'gold' | 'flame' | 'sky' | 'indigo' | 'stone' | 'grass'
+type BadgeVariant = 'strategy' | 'engineering' | 'design' | 'ai' | 'salesforce' | 'webinar' | 'in-person' | 'workshop' | 'conference' | 'stone'
 
 const eventTypeVariant: Record<string, BadgeVariant> = {
-  Webinar:     'sky',
-  'In-Person': 'grass',
-  Workshop:    'gold',
-  Conference:  'indigo',
+  Webinar:     'webinar',
+  'In-Person': 'in-person',
+  Workshop:    'workshop',
+  Conference:  'conference',
 }
 
 const categoryVariant: Record<string, BadgeVariant> = {
-  Strategy:    'maroon',
-  Engineering: 'indigo',
-  Design:      'sky',
-  AI:          'flame',
-  Salesforce:  'grass',
+  Strategy:    'strategy',
+  Engineering: 'engineering',
+  Design:      'design',
+  AI:          'ai',
+  Salesforce:  'salesforce',
 }
 
 export default async function DashboardPage() {
@@ -66,11 +66,11 @@ export default async function DashboardPage() {
     : ''
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 page-enter">
 
         {/* Header */}
-        <div className="mb-10">
-          <h1 className="font-geist font-bold text-4xl text-cabin-charcoal">
+        <div>
+          <h1 className="font-geist font-bold text-5xl tracking-tight text-cabin-charcoal">
             Hey {firstName} 👋
           </h1>
           <p className="mt-2 font-inter text-cabin-stone text-base">
@@ -86,9 +86,9 @@ export default async function DashboardPage() {
               {/* View Latest Report */}
               <Link
                 href="/reports"
-                className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
+                className="quick-action-card bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
               >
-                <div className="inline-flex items-center justify-center bg-cabin-sky/20 p-2 rounded-xl flex-shrink-0">
+                <div className="inline-flex items-center justify-center bg-cabin-sky/20 p-3 rounded-xl flex-shrink-0">
                   <FileText size={24} className="text-cabin-indigo" />
                 </div>
                 <div>
@@ -104,9 +104,9 @@ export default async function DashboardPage() {
               {/* Send a Referral */}
               <Link
                 href="/referrals"
-                className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
+                className="quick-action-card bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
               >
-                <div className="inline-flex items-center justify-center bg-cabin-flame/10 p-2 rounded-xl flex-shrink-0">
+                <div className="inline-flex items-center justify-center bg-cabin-flame/10 p-3 rounded-xl flex-shrink-0">
                   <Send size={24} className="text-cabin-flame" />
                 </div>
                 <div>
@@ -122,9 +122,9 @@ export default async function DashboardPage() {
               {/* Download an Asset */}
               <Link
                 href="/assets"
-                className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
+                className="quick-action-card bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
               >
-                <div className="inline-flex items-center justify-center bg-cabin-gold/20 p-2 rounded-xl flex-shrink-0">
+                <div className="inline-flex items-center justify-center bg-cabin-gold/20 p-3 rounded-xl flex-shrink-0">
                   <Download size={24} style={{ color: '#B8860B' }} />
                 </div>
                 <div>
@@ -142,12 +142,12 @@ export default async function DashboardPage() {
           {/* Upcoming Events */}
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-geist font-semibold text-cabin-charcoal text-lg">
+              <h2 className="font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone">
                 Upcoming Events
               </h2>
               <Link
                 href="/events"
-                className="font-inter text-cabin-maroon text-sm hover:underline"
+                className="font-inter text-xs font-semibold uppercase tracking-widest text-cabin-maroon hover:text-cabin-charcoal transition-colors"
               >
                 View all events →
               </Link>
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <Badge variant={eventVariant}>{featuredEvent.eventType}</Badge>
-                      <span className="inline-flex items-center text-xs font-inter text-cabin-stone bg-cabin-mauve px-2.5 py-1 rounded-full">
+                      <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
                         {eventLocationLabel}
                       </span>
                     </div>
@@ -202,12 +202,12 @@ export default async function DashboardPage() {
           {/* Recent Articles */}
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-geist font-semibold text-cabin-charcoal text-lg">
+              <h2 className="font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone">
                 Recent Articles
               </h2>
               <Link
                 href="/articles"
-                className="font-inter text-cabin-maroon text-sm hover:underline"
+                className="font-inter text-xs font-semibold uppercase tracking-widest text-cabin-maroon hover:text-cabin-charcoal transition-colors"
               >
                 View all articles →
               </Link>
@@ -227,10 +227,10 @@ export default async function DashboardPage() {
                     <Link
                       key={article.slug.current}
                       href={`/articles/${article.slug.current}`}
-                      className={`flex gap-4 items-start py-4 transition-all duration-150 block ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
+                      className={`flex gap-4 items-center py-4 transition-all duration-150 block ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
                     >
                       {/* Cover image */}
-                      <div className="flex-shrink-0 w-32 h-24 rounded-xl overflow-hidden bg-cabin-mauve">
+                      <div className="flex-shrink-0 w-40 h-28 lg:w-48 lg:h-32 rounded-xl overflow-hidden bg-cabin-mauve">
                         {article.coverImage && (
                           <img
                             src={urlFor(article.coverImage)}
