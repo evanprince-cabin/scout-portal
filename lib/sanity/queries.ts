@@ -5,11 +5,25 @@ export async function getDashboardData() {
     "latestReport": *[_type == "report"] | order(publishedDate desc) [0] {
       title, slug, publishedDate, summary, coverImage
     },
-    "recentArticles": *[_type == "article"] | order(publishedDate desc) [0..2] {
-      title, slug, publishedDate, category, summary, coverImage
-    },
     "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] {
       title, slug, date, eventType, location, registrationUrl, summary
+    },
+    "activityFeed": {
+      "reports": *[_type == "report"] | order(_createdAt desc) [0..2] {
+        "contentType": "report", title, _createdAt, slug
+      },
+      "articles": *[_type == "article"] | order(_createdAt desc) [0..2] {
+        "contentType": "article", title, _createdAt, slug
+      },
+      "playbookPages": *[_type == "playbookPage"] | order(_createdAt desc) [0..2] {
+        "contentType": "playbookPage", title, _createdAt, slug
+      },
+      "assets": *[_type == "asset"] | order(_createdAt desc) [0..2] {
+        "contentType": "asset", title, _createdAt
+      },
+      "events": *[_type == "event"] | order(_createdAt desc) [0..2] {
+        "contentType": "event", title, _createdAt, slug
+      }
     }
   }`)
 }

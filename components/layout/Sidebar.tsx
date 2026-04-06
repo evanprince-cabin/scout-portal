@@ -8,7 +8,7 @@ import { UserButton, useUser } from '@clerk/nextjs'
 import {
   LayoutDashboard,
   FileText,
-  BookOpen,
+  BookMarked,
   Map,
   FolderOpen,
   Calendar,
@@ -26,7 +26,7 @@ const navSections = [
     label: 'RESOURCES',
     items: [
       { href: '/reports', label: 'Reports', icon: FileText },
-      { href: '/articles', label: 'Articles', icon: BookOpen },
+      { href: '/case-studies', label: 'Case Studies', icon: BookMarked },
       { href: '/playbook', label: 'Playbook', icon: Map },
       { href: '/assets', label: 'Assets', icon: FolderOpen },
     ],

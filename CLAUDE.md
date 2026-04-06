@@ -24,8 +24,8 @@ A gated web portal for Cabin's external referral partners ("scouts"). Scouts sub
 ```
 app/
   (auth)/sign-in, sign-up
-  (portal)/                   # All gated routes — Clerk auth required
-    layout.tsx                # Sidebar + topnav shell
+  (portal)/                      # All gated routes — Clerk auth required
+    layout.tsx                   # Sidebar + topnav shell
     dashboard/page.tsx
     reports/page.tsx + [slug]/page.tsx
     articles/page.tsx + [slug]/page.tsx
@@ -33,31 +33,154 @@ app/
     assets/page.tsx
     events/page.tsx + [slug]/page.tsx
     referrals/page.tsx
+    case-studies/page.tsx        # Stub — no Sanity schema yet
   api/
-    referrals/route.ts        # POST — create referral
-    referrals/[id]/route.ts   # GET — fetch scout's referrals
+    referrals/route.ts           # POST — create referral
+    referrals/[id]/route.ts      # GET — fetch scout's referrals
 components/
-  layout/                     # Sidebar, TopNav, MobileNav
-  ui/                         # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton
-  dashboard/                  # StatCard, QuickActions
-  content/                    # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard
-  referrals/                  # ReferralForm, ReferralTable
+  layout/                        # Sidebar, TopNav, MobileNav
+  ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton
+  dashboard/                     # StatCard, QuickActions
+  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard
+  referrals/                     # ReferralForm, ReferralTable
 lib/
-  sanity/                     # Sanity client + GROQ queries
-  supabase/                   # Supabase client + referral helpers
-sanity/schemas/               # report, article, playbookPage, asset, event
-middleware.ts                 # Clerk auth guard
+  sanity/                        # Sanity client + GROQ queries
+  supabase/                      # Supabase client + referral helpers
+sanity/schemas/                  # report, article, playbookPage, asset, event
+middleware.ts                    # Clerk auth guard
 ```
+
+---
+
+## Navigation Structure
+
+Defined in `components/layout/Sidebar.tsx` as `navSections`. Both desktop sidebar and mobile drawer render from this same data structure via `SidebarContent`.
+
+```
+OVERVIEW
+  Home               /dashboard       LayoutDashboard
+
+RESOURCES
+  Reports            /reports         FileText
+  Case Studies       /case-studies    BookMarked
+  Playbook           /playbook        Map
+  Assets             /assets          FolderOpen
+
+COMMUNITY
+  Events             /events          Calendar
+
+MY SCOUT
+  Referrals          /referrals       Send
+```
+
+**Articles has been removed from the sidebar nav.** The articles route (`/articles`) still exists but is no longer linked in navigation.
+
+---
+
+## Design System
+
+### Color Palette (Tailwind config)
+- `cabin-charcoal` — primary dark text, headings
+- `cabin-stone` — secondary text, muted labels
+- `cabin-linen` — sidebar background, warm off-white
+- `cabin-mauve` — hover states, subtle backgrounds
+- `cabin-maroon` — primary CTA, active nav item background
+- `cabin-flame` — accent color (underlines, icon highlights)
+- `cabin-sky` / `cabin-indigo` — report/blue accent
+- `cabin-gold` — asset/download accent
+
+### Layout
+- **Sidebar**: `w-60`, `bg-cabin-linen`, fixed left, hidden on mobile. Active nav item: `bg-cabin-maroon text-white rounded-full`.
+- **Mobile**: Top bar with hamburger, slides in `w-72` drawer overlay with close button.
+- **Content panel**: Inset from sidebar (`lg:pl-60`), padded content area.
+- **Page wrapper**: `space-y-8 page-enter` on the root div of each page.
+
+### Typography
+- Headings: `font-geist font-bold`
+- Body / labels: `font-inter`
+- Section labels: `text-xs font-semibold uppercase tracking-widest text-cabin-stone`
+- Page titles: `font-geist font-bold text-3xl tracking-tight text-cabin-charcoal` (most pages) or `text-4xl lg:text-5xl` (dashboard)
+
+### Badge Variants
+Defined in `components/ui/Badge.tsx`:
+- Referral status: `submitted` = gray, `contacted` = blue, `in_conversations` = yellow, `proposal_sent` = purple, `closed_won` = green, `closed_lost` = red
+- Article category: `strategy`, `engineering`, `design`, `ai`, `salesforce`
+- Event type: `webinar`, `in-person`, `workshop`, `conference`
+- Fallback: `stone`
+
+### Cards
+- Standard card: `bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl`
+- Hover: `hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150`
+
+---
+
+## Page Specs
+
+### Dashboard (`force-dynamic`, SSR)
+
+**Header:**
+- Top row: `FIELD STATUS • Q1 2026` label (left, `text-xs font-semibold uppercase tracking-widest`) + `Send a Referral →` pill button linking to `/referrals` (right, `bg-cabin-maroon rounded-full`)
+- Title: `Welcome back [First Name].` — `text-4xl lg:text-5xl font-bold font-geist` — first name from Clerk `currentUser()`, no emoji
+- Accent underline: `border-b-2 border-cabin-flame` — `inline-block` wrapper so the underline hugs the text width
+
+**Latest Report Banner** (full-width, below header):
+- Full-width `<Link>` to `/reports/[slug]` — entire card is clickable
+- `▲ Latest Report` label in `text-cabin-flame`, report title in `text-lg font-semibold`, formatted publish date below
+- Hover effect: dot-pattern radial-gradient overlay (fades in via `group-hover:opacity-100`), `hover:shadow-md`, `hover:-translate-y-0.5`, `hover:border-cabin-maroon/30`
+- Renders nothing if no report exists in Sanity
+
+**Two-column layout** (`grid-cols-1 lg:grid-cols-3 gap-8`):
+
+Left column (`lg:col-span-2`):
+- **Activity Feed** — card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page (assets → `/assets`). Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
+- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card is a full `<Link>` to the event detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; Share + RSVP buttons in `EventCardActions` client component (handles `stopPropagation`). CTA is `RSVP →`. Same dot-pattern hover as report banner. "View all events →" link in section header.
+
+Right column (`lg:col-span-1`):
+- **Dive Deeper** section label (`text-xs font-semibold uppercase tracking-widest`)
+- Two stacked action cards (`space-y-3`): "Recorded Tech Talks" (PlayCircle icon → `https://www.youtube.com/@cabinco`, `target="_blank"`), "Study the Playbook" (BookOpen icon → `/playbook`). Titles are `text-base font-semibold`.
+- Same dot-pattern hover effect as report banner and event cards.
+
+### Reports (ISR 60s)
+- Grid sorted newest first; card: cover image, month/year, summary, "Read Report" CTA
+- Individual page: rich text + optional PDF download
+
+### Articles (ISR 60s)
+- Filterable grid by category; featured article shown as hero
+- Individual page: rich text + copy-URL share button
+- **Not in sidebar nav** — accessible directly by URL only
+
+### Playbook (SSG + on-demand revalidation)
+- Left sidebar nav by section; rich text content per page
+- Sidebar collapses to dropdown on mobile
+
+### Assets (ISR 60s)
+- Filterable grid by category
+- PDFs → Download; Email/LinkedIn templates → Copy to Clipboard + success toast; Videos → inline embed
+
+### Events (ISR 60s)
+- Upcoming first (asc), past events collapsed under toggle; filter by type
+- Card: cover image, event type badge, date, location, summary, RSVP button (formerly "Register" — renamed throughout)
+- Individual page: full details + registration CTA + share link
+
+### Referrals (SSR)
+- Form: Prospect Name, Company, Email, Phone (optional), Service Interest (dropdown), Notes (optional)
+- On submit: success toast + form reset + new row in table below
+- Table: Prospect Name, Company, Service Interest, Date Submitted, Status badge
+
+### Case Studies (stub)
+- Placeholder page only — heading + subtitle + `EmptyState` component
+- **No Sanity schema built yet.** Schema, queries, and page data fetching are outstanding work.
 
 ---
 
 ## Authentication — Clerk
 
-- All `/dashboard`, `/reports`, `/articles`, `/playbook`, `/assets`, `/events`, `/referrals` routes protected via `middleware.ts`
+- All portal routes protected via `middleware.ts`
 - Unauthenticated users redirect to `/sign-in`
 - Access is invite-only — Cabin admin sends invite links via Clerk dashboard
 - Scout's Clerk `user.id` is used as `scout_id` in all Supabase queries
 - Clerk JWT authenticates Supabase queries via RLS
+- `/case-studies` is **not yet added** to the middleware route matcher — add it when the page becomes real
 
 ```typescript
 // middleware.ts
@@ -86,15 +209,22 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 - **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
 - **asset**: `title, description, category (One-Pager|Email Template|Case Study|Video|Brand), file, videoUrl, thumbnail, copyableText`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
+- **caseStudy**: ⚠️ Not yet created — planned schema for the Case Studies section
 
 ### Key GROQ Queries
 
 ```groq
-// Dashboard
+// Dashboard (getDashboardData)
 {
   "latestReport": *[_type == "report"] | order(publishedDate desc) [0] { title, slug, publishedDate, summary, coverImage },
-  "recentArticles": *[_type == "article"] | order(publishedDate desc) [0..2] { title, slug, publishedDate, category, summary, coverImage },
-  "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] { title, slug, date, eventType, location, registrationUrl, summary }
+  "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] { title, slug, date, eventType, location, registrationUrl, summary },
+  "activityFeed": {
+    "reports":      *[_type == "report"]      | order(_createdAt desc) [0..2] { "contentType": "report",      title, _createdAt, slug },
+    "articles":     *[_type == "article"]     | order(_createdAt desc) [0..2] { "contentType": "article",     title, _createdAt, slug },
+    "playbookPages":*[_type == "playbookPage"]| order(_createdAt desc) [0..2] { "contentType": "playbookPage",title, _createdAt, slug },
+    "assets":       *[_type == "asset"]       | order(_createdAt desc) [0..2] { "contentType": "asset",       title, _createdAt },
+    "events":       *[_type == "event"]       | order(_createdAt desc) [0..2] { "contentType": "event",       title, _createdAt, slug }
+  }
 }
 
 // Articles filtered by category
@@ -127,10 +257,6 @@ updated_at        timestamptz default now()
 ### Status flow (Cabin manages internally)
 `submitted` → `contacted` → `in_conversations` → `proposal_sent` → `closed_won` → `closed_lost`
 
-### Status badge colors
-- `submitted` = gray, `contacted` = blue, `in_conversations` = yellow
-- `proposal_sent` = purple, `closed_won` = green, `closed_lost` = red
-
 ### Row Level Security
 - Scouts can only read/insert their own rows (`scout_id = requesting_user_id()`)
 - Cabin updates status via service role key (bypasses RLS)
@@ -141,47 +267,11 @@ updated_at        timestamptz default now()
 
 | Route | Strategy |
 |---|---|
-| `/dashboard`, `/referrals` | SSR — live Supabase data per scout |
+| `/dashboard`, `/referrals` | SSR (`force-dynamic`) — live Supabase data per scout |
 | `/reports`, `/articles`, `/events`, `/assets` | ISR (60s) — CMS content |
 | `/reports/[slug]`, `/articles/[slug]`, `/events/[slug]` | ISR (60s) |
 | `/playbook/[slug]` | SSG + on-demand revalidation |
-
----
-
-## Page Specs
-
-### Dashboard
-- Greeting: "Hey [First Name] 👋"
-- 3 stat cards: Referrals Submitted, Active, Closed Won (from Supabase)
-- Latest report card, 3 recent article cards, upcoming featured event callout (from Sanity)
-- Quick actions: Submit a Referral, Browse Assets, Read the Playbook
-- Loading skeletons on all async components; empty state for new scouts
-
-### Reports
-- Grid sorted newest first; card: cover image, month/year, summary, "Read Report" CTA
-- Individual page: rich text + optional PDF download
-
-### Articles
-- Filterable grid by category; featured article shown as hero
-- Individual page: rich text + copy-URL share button
-
-### Playbook
-- Left sidebar nav by section; rich text content per page
-- Sidebar collapses to dropdown on mobile
-
-### Assets
-- Filterable grid by category
-- PDFs → Download; Email/LinkedIn templates → Copy to Clipboard + success toast; Videos → inline embed
-
-### Events
-- Upcoming first (asc), past events collapsed under toggle; filter by type
-- Card: cover image, event type badge, date, location, summary, Register button
-- Individual page: full details + registration CTA + share link
-
-### Referrals
-- Form: Prospect Name, Company, Email, Phone (optional), Service Interest (dropdown), Notes (optional)
-- On submit: success toast + form reset + new row in table below
-- Table: Prospect Name, Company, Service Interest, Date Submitted, Status badge
+| `/case-studies` | Static stub (no data fetching) |
 
 ---
 
@@ -212,13 +302,36 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Key Architectural Rules
 
-- **Sanity only for CMS content** (articles, reports, playbook, assets, events). Never store this in Supabase.
+- **Sanity only for CMS content** (articles, reports, playbook, assets, events, case studies). Never store this in Supabase.
 - **Supabase only for referral data.** Clean separation of concerns.
 - **Clerk is the single source of truth for identity.** `user.id` is `scout_id` everywhere.
 - **No custom admin UI for MVP.** Cabin manages scouts in Clerk dashboard and referral statuses directly in Supabase.
 - **No commission tracking or payment features** — off-platform.
 - **No community message board** — post-MVP.
 - Placeholder content at launch; real content migrated after project approval.
+
+---
+
+## Outstanding Work
+
+- **Case Studies schema** — Sanity schema (`caseStudy`), GROQ queries, page data fetching, and `[slug]` detail page not yet built
+- **Middleware** — `/case-studies` route not yet added to the Clerk route matcher in `middleware.ts`; add when the page becomes real
+- **`components/dashboard/`** — `EventCardActions` client component added (handles RSVP `window.open` + `stopPropagation` for the event card); `StatCard` and `QuickActions` files may be stale/unused after dashboard redesign
+
+---
+
+## Common Fixes
+
+```bash
+# Clear Next.js build cache (fixes stale module / hydration errors)
+rm -rf .next && pnpm dev
+
+# Kill ports if dev server hangs
+lsof -ti:3000 | xargs kill -9
+
+# Re-install deps after lockfile changes
+pnpm install
+```
 
 ---
 

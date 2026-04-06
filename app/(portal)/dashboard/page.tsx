@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import { currentUser } from '@clerk/nextjs/server'
-import { FileText, Send, Download } from 'lucide-react'
+import { BookOpen, PlayCircle } from 'lucide-react'
 import { getDashboardData } from '@/lib/sanity/queries'
 import { getReferralStats } from '@/lib/supabase/referrals'
-import { urlFor } from '@/lib/sanity/image'
 import Badge from '@/components/ui/Badge'
-import ShareButton from '@/components/ui/ShareButton'
+import EventCardActions from '@/components/dashboard/EventCardActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,12 +17,20 @@ const eventTypeVariant: Record<string, BadgeVariant> = {
   Conference:  'conference',
 }
 
-const categoryVariant: Record<string, BadgeVariant> = {
-  Strategy:    'strategy',
-  Engineering: 'engineering',
-  Design:      'design',
-  AI:          'ai',
-  Salesforce:  'salesforce',
+const activityDot: Record<string, string> = {
+  report:       'bg-cabin-indigo',
+  article:      'bg-emerald-400',
+  playbookPage: 'bg-purple-400',
+  asset:        'bg-amber-400',
+  event:        'bg-amber-400',
+}
+
+const activityLabel: Record<string, string> = {
+  report:       'Report',
+  article:      'Article',
+  playbookPage: 'Playbook',
+  asset:        'Asset',
+  event:        'Event',
 }
 
 export default async function DashboardPage() {
@@ -36,113 +43,135 @@ export default async function DashboardPage() {
       : Promise.resolve({ submitted: 0, active: 0, closedWon: 0 }),
     getDashboardData().catch(() => ({
       latestReport: null,
-      recentArticles: [],
       upcomingEvents: [],
+      activityFeed: { reports: [], articles: [], playbookPages: [], assets: [], events: [] },
     })),
   ])
 
-  const recentArticles = dashboardData?.recentArticles ?? []
+  const latestReport = dashboardData?.latestReport ?? null
   const upcomingEvents = dashboardData?.upcomingEvents ?? []
-  const featuredEvent = upcomingEvents[0] ?? null
+  const rawFeed = dashboardData?.activityFeed ?? {}
 
-  // Pre-compute event display values
-  const eventVariant: BadgeVariant = featuredEvent
-    ? (eventTypeVariant[featuredEvent.eventType] ?? 'stone')
-    : 'stone'
-  const eventLocationLabel = featuredEvent
-    ? (featuredEvent.location &&
-        featuredEvent.location.trim().toLowerCase() !== 'virtual' &&
-        featuredEvent.location.trim() !== ''
-          ? featuredEvent.location
-          : 'Virtual')
-    : ''
-  const eventFormattedDate = featuredEvent
-    ? new Date(featuredEvent.date).toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : ''
+  const allActivity = [
+    ...(rawFeed.reports ?? []),
+    ...(rawFeed.articles ?? []),
+    ...(rawFeed.playbookPages ?? []),
+    ...(rawFeed.assets ?? []),
+    ...(rawFeed.events ?? []),
+  ]
+    .sort((a: any, b: any) => new Date(b._createdAt).getTime() - new Date(a._createdAt).getTime())
+    .slice(0, 3)
 
   return (
     <div className="space-y-8 page-enter">
 
-        {/* Header */}
-        <div>
-          <h1 className="font-geist font-bold text-5xl tracking-tight text-cabin-charcoal">
-            Hey {firstName} 👋
-          </h1>
-          <p className="mt-2 font-inter text-cabin-stone text-base">
-            Here&apos;s what&apos;s happening at Cabin.
-          </p>
+      {/* Header */}
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
+            Field Status • Q1 2026
+          </span>
+          <Link
+            href="/referrals"
+            className="bg-cabin-maroon text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-cabin-charcoal transition-colors duration-150"
+          >
+            Send a Referral →
+          </Link>
         </div>
+        <div className="inline-block mt-4">
+          <h1 className="font-geist font-bold text-4xl lg:text-5xl tracking-tight text-cabin-charcoal">
+            Welcome back {firstName}.
+          </h1>
+          <div className="border-b-2 border-cabin-flame mt-1 mb-8" />
+        </div>
+      </div>
 
-        <div className="space-y-10">
+      {/* Latest Report Banner */}
+      {latestReport && (
+        <Link
+          href={`/reports/${latestReport.slug.current}`}
+          className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 w-full hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 mb-8 block"
+        >
+          <div
+            className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
+          />
+          <div className="relative z-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-cabin-flame mb-1">
+              ▲ Latest Report
+            </p>
+            <p className="font-geist font-semibold text-cabin-charcoal text-lg leading-snug">
+              {latestReport.title}
+            </p>
+            <p className="mt-1 text-sm font-inter text-cabin-stone">
+              {new Date(latestReport.publishedDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </p>
+          </div>
+        </Link>
+      )}
 
-          {/* Quick Actions */}
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {/* Left column — lg:col-span-2 */}
+        <div className="lg:col-span-2 space-y-8">
+
+          {/* Activity Feed */}
           <section>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* View Latest Report */}
-              <Link
-                href="/reports"
-                className="quick-action-card bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
-              >
-                <div className="inline-flex items-center justify-center bg-cabin-sky/20 p-3 rounded-xl flex-shrink-0">
-                  <FileText size={24} className="text-cabin-indigo" />
-                </div>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
+              Activity Feed
+            </h2>
+            <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-4">
+              {allActivity.length > 0 ? (
                 <div>
-                  <p className="font-geist font-semibold text-cabin-charcoal text-base">
-                    View Latest Report
-                  </p>
-                  <p className="mt-0.5 font-inter text-cabin-stone text-sm">
-                    Read the most recent scout report
-                  </p>
+                  {allActivity.map((item: any, index: number) => {
+                    const isLast = index === allActivity.length - 1
+                    const href =
+                      item.contentType === 'report'       ? `/reports/${item.slug?.current}` :
+                      item.contentType === 'article'      ? `/articles/${item.slug?.current}` :
+                      item.contentType === 'playbookPage' ? `/playbook/${item.slug?.current}` :
+                      item.contentType === 'event'        ? `/events/${item.slug?.current}` :
+                      '/assets'
+                    return (
+                      <Link
+                        key={`${item.contentType}-${item._createdAt}`}
+                        href={href}
+                        className={`flex items-start gap-3 py-4 px-4 hover:bg-cabin-mauve/30 rounded-xl transition-colors duration-150 ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
+                      >
+                        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${activityDot[item.contentType] ?? 'bg-cabin-stone'}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-0.5">
+                            {activityLabel[item.contentType] ?? item.contentType}
+                          </p>
+                          <p className="font-inter text-base font-semibold text-cabin-charcoal leading-snug">
+                            {item.title}
+                          </p>
+                          <p className="text-xs font-inter text-cabin-stone mt-0.5">
+                            Added • {new Date(item._createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
-              </Link>
-
-              {/* Send a Referral */}
-              <Link
-                href="/referrals"
-                className="quick-action-card bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
-              >
-                <div className="inline-flex items-center justify-center bg-cabin-flame/10 p-3 rounded-xl flex-shrink-0">
-                  <Send size={24} className="text-cabin-flame" />
-                </div>
-                <div>
-                  <p className="font-geist font-semibold text-cabin-charcoal text-base">
-                    Send a Referral
-                  </p>
-                  <p className="mt-0.5 font-inter text-cabin-stone text-sm">
-                    Submit a new referral to the sales team
-                  </p>
-                </div>
-              </Link>
-
-              {/* Download an Asset */}
-              <Link
-                href="/assets"
-                className="quick-action-card bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-row items-center gap-4"
-              >
-                <div className="inline-flex items-center justify-center bg-cabin-gold/20 p-3 rounded-xl flex-shrink-0">
-                  <Download size={24} style={{ color: '#B8860B' }} />
-                </div>
-                <div>
-                  <p className="font-geist font-semibold text-cabin-charcoal text-base">
-                    Download an Asset
-                  </p>
-                  <p className="mt-0.5 font-inter text-cabin-stone text-sm">
-                    Browse and download sales materials
-                  </p>
-                </div>
-              </Link>
+              ) : (
+                <p className="font-inter text-cabin-stone text-sm">No recent activity.</p>
+              )}
             </div>
           </section>
 
           {/* Upcoming Events */}
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
                 Upcoming Events
               </h2>
               <Link
@@ -153,126 +182,119 @@ export default async function DashboardPage() {
               </Link>
             </div>
 
-            {featuredEvent ? (
-              <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <Badge variant={eventVariant}>{featuredEvent.eventType}</Badge>
-                      <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
-                        {eventLocationLabel}
-                      </span>
-                    </div>
-                    <Link href={`/events/${featuredEvent.slug.current}`}>
-                      <h3 className="font-geist font-semibold text-cabin-charcoal text-lg leading-snug mb-1 hover:text-cabin-maroon transition-colors duration-150">
-                        {featuredEvent.title}
-                      </h3>
-                    </Link>
-                    <p className="text-sm font-inter text-cabin-stone mb-2">
-                      {eventFormattedDate}
-                    </p>
-                    {featuredEvent.summary && (
-                      <p className="text-sm font-inter text-cabin-stone line-clamp-2">
-                        {featuredEvent.summary}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex flex-row gap-2 flex-shrink-0 items-center sm:pt-1">
-                    <ShareButton href={`/events/${featuredEvent.slug.current}`} label="Share Event" />
-                    {featuredEvent.registrationUrl && (
-                      <a
-                        href={featuredEvent.registrationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
-                      >
-                        Register →
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <p className="font-inter text-cabin-stone text-sm">
-                No upcoming events scheduled.
-              </p>
-            )}
-          </section>
+            {upcomingEvents.length > 0 ? (
+              <div className="space-y-4">
+                {upcomingEvents.map((event: any) => {
+                  const eventDate = new Date(event.date)
+                  const dayNum = eventDate.toLocaleDateString('en-US', { day: 'numeric' })
+                  const monthAbbr = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+                  const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+                  const locationLabel =
+                    event.location &&
+                    event.location.trim().toLowerCase() !== 'virtual' &&
+                    event.location.trim() !== ''
+                      ? event.location
+                      : 'Virtual'
+                  const variant: BadgeVariant = eventTypeVariant[event.eventType] ?? 'stone'
 
-          {/* Recent Articles */}
-          <section>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-inter font-semibold text-sm uppercase tracking-widest text-cabin-stone">
-                Recent Articles
-              </h2>
-              <Link
-                href="/articles"
-                className="font-inter text-xs font-semibold uppercase tracking-widest text-cabin-maroon hover:text-cabin-charcoal transition-colors"
-              >
-                View all articles →
-              </Link>
-            </div>
-
-            {recentArticles.length > 0 ? (
-              <div>
-                {recentArticles.map((article: any, index: number) => {
-                  const variant = categoryVariant[article.category] ?? 'stone'
-                  const formattedDate = new Date(article.publishedDate).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                  const isLast = index === recentArticles.length - 1
                   return (
-                    <Link
-                      key={article.slug.current}
-                      href={`/articles/${article.slug.current}`}
-                      className={`flex gap-4 items-center py-4 transition-all duration-150 block ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
-                    >
-                      {/* Cover image */}
-                      <div className="flex-shrink-0 w-40 h-28 lg:w-48 lg:h-32 rounded-xl overflow-hidden bg-cabin-mauve">
-                        {article.coverImage && (
-                          <img
-                            src={urlFor(article.coverImage)}
-                            alt={article.title}
-                            className="w-full h-full object-cover"
-                          />
+                    <Link key={event.slug.current} href={`/events/${event.slug.current}`} className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 flex gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block">
+                      <div
+                        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
+                      />
+                      {/* Date block */}
+                      <div className="relative z-10 flex-shrink-0 bg-cabin-mauve rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
+                        <span className="font-geist font-bold text-2xl text-cabin-charcoal leading-none">{dayNum}</span>
+                        <span className="font-inter text-xs font-semibold text-cabin-stone mt-0.5">{monthAbbr}</span>
+                      </div>
+
+                      {/* Event details */}
+                      <div className="relative z-10 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          <Badge variant={variant}>{event.eventType}</Badge>
+                          <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
+                            {locationLabel}
+                          </span>
+                        </div>
+                        <h3 className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1">
+                          {event.title}
+                        </h3>
+                        <p className="text-xs font-inter text-cabin-stone mb-1.5">{timeStr} · {locationLabel}</p>
+                        {event.summary && (
+                          <p className="text-sm font-inter text-cabin-stone line-clamp-2">{event.summary}</p>
                         )}
                       </div>
 
-                      {/* Article info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1.5">
-                          {article.title}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs font-inter text-cabin-stone mb-2">
-                          <span>{formattedDate}</span>
-                          <span>·</span>
-                          <span>5 min read</span>
-                          <span>·</span>
-                          <Badge variant={variant}>{article.category}</Badge>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-5 h-5 rounded-full bg-cabin-sky flex items-center justify-center flex-shrink-0">
-                            <span className="text-cabin-indigo font-geist font-bold leading-none" style={{ fontSize: '9px' }}>
-                              CN
-                            </span>
-                          </div>
-                          <span className="font-inter text-cabin-stone text-sm">Cabin</span>
-                        </div>
-                      </div>
+                      {/* Actions */}
+                      <EventCardActions
+                        eventSlug={event.slug.current}
+                        registrationUrl={event.registrationUrl}
+                      />
                     </Link>
                   )
                 })}
               </div>
             ) : (
-              <p className="font-inter text-cabin-stone text-sm">
-                No articles published yet.
-              </p>
+              <p className="font-inter text-cabin-stone text-sm">No upcoming events scheduled.</p>
             )}
           </section>
 
         </div>
+
+        {/* Right column — lg:col-span-1 */}
+        <div className="lg:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
+            Dive Deeper
+          </p>
+          <div className="space-y-3">
+            <a
+              href="https://www.youtube.com/@cabinco"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-start gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block"
+            >
+              <div
+                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
+              />
+              <div className="relative z-10 flex items-start gap-4">
+                <div className="flex-shrink-0 mt-0.5">
+                  <PlayCircle size={20} className="text-cabin-stone" />
+                </div>
+                <div>
+                  <p className="font-geist font-semibold text-cabin-charcoal text-base">Recorded Tech Talks</p>
+                  <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
+                    Watch previous tech talks on our Youtube channel.
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <Link
+              href="/playbook"
+              className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-start gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block"
+            >
+              <div
+                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
+              />
+              <div className="relative z-10 flex items-start gap-4">
+                <div className="flex-shrink-0 mt-0.5">
+                  <BookOpen size={20} className="text-cabin-stone" />
+                </div>
+                <div>
+                  <p className="font-geist font-semibold text-cabin-charcoal text-base">Study the Playbook</p>
+                  <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
+                    Learn how to be the best advocate for Cabin to your network.
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+      </div>
 
     </div>
   )
