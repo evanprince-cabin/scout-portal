@@ -68,12 +68,8 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-5 flex items-center gap-2 mb-6">
-        <Image src="/cabin-symbol-black.png" alt="Cabin" width={20} height={20} className="object-contain flex-shrink-0" />
-        <div className="flex items-center gap-1.5">
-          <span className="text-cabin-charcoal font-geist font-bold text-base leading-none">Cabin</span>
-          <span className="text-cabin-stone/50 font-inter font-medium text-sm tracking-widest leading-none">SCOUT</span>
-        </div>
+      <div className="px-6 py-5 mb-6">
+        <Image src="/cabin-wordmark-charcoal.png" alt="Cabin" width={89} height={24} className="object-contain" />
       </div>
 
       {/* Nav sections */}
@@ -137,9 +133,8 @@ export default function Sidebar() {
 
       {/* Mobile top bar */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-cabin-linen border-b border-cabin-stone/15 px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Image src="/cabin-symbol-black.png" alt="Cabin" width={20} height={20} className="object-contain" />
-          <span className="text-cabin-charcoal font-geist font-bold text-base tracking-tight">Cabin Scout</span>
+        <div className="flex items-center">
+          <Image src="/cabin-wordmark-charcoal.png" alt="Cabin" width={89} height={24} className="object-contain" />
         </div>
         <button
           onClick={() => setMobileOpen(true)}
