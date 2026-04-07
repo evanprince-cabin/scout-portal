@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
-import ShareButton from '@/components/ui/ShareButton'
+import EventCardActions from '@/components/dashboard/EventCardActions'
 
 type BadgeVariant = 'webinar' | 'in-person' | 'workshop' | 'conference' | 'stone'
 
@@ -25,12 +25,10 @@ export default function EventCard({ event }: { event: Event }) {
   const { title, slug, date, eventType, location, registrationUrl, summary } = event
   const variant = eventTypeVariant[eventType] ?? 'stone'
 
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  const dateObj = new Date(date)
+  const dayNum = dateObj.toLocaleDateString('en-US', { day: 'numeric' })
+  const monthAbbr = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+  const timeStr = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 
   const locationLabel =
     location && location.trim().toLowerCase() !== 'virtual' && location.trim() !== ''
@@ -38,39 +36,37 @@ export default function EventCard({ event }: { event: Event }) {
       : 'Virtual'
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-cabin-stone/20 hover:shadow-md hover:border-cabin-maroon/30 transition-all duration-200 hover:-translate-y-0.5">
-      <div className="flex flex-col sm:flex-row sm:items-start gap-5">
+    <div className="relative overflow-hidden bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 flex flex-wrap gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer max-w-7xl">
+      <Link href={`/events/${slug.current}`} className="absolute inset-0 z-0" aria-label={title} />
+
+      {/* Date block + Event details */}
+      <div className="flex gap-4 flex-1 min-w-0">
+        <div className="flex-shrink-0 bg-cabin-mauve rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
+          <span className="font-geist font-bold text-2xl text-cabin-charcoal leading-none">{dayNum}</span>
+          <span className="font-inter text-xs font-semibold text-cabin-stone mt-0.5">{monthAbbr}</span>
+        </div>
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
+          <div className="flex flex-wrap items-center gap-2 mb-1.5">
             <Badge variant={variant}>{eventType}</Badge>
             <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
               {locationLabel}
             </span>
           </div>
-          <Link href={`/events/${slug.current}`}>
-            <h3 className="font-geist font-semibold text-cabin-charcoal text-lg leading-snug mb-1 hover:text-cabin-maroon transition-colors duration-150">
-              {title}
-            </h3>
-          </Link>
-          <p className="text-sm font-inter text-cabin-stone mb-2">{formattedDate}</p>
+          <h3 className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1">
+            {title}
+          </h3>
+          <p className="text-xs font-inter text-cabin-stone mb-1.5">{timeStr} · {locationLabel}</p>
           {summary && (
             <p className="text-sm font-inter text-cabin-stone line-clamp-2">{summary}</p>
           )}
         </div>
-        <div className="flex flex-row gap-2 flex-shrink-0 items-center">
-          {registrationUrl && (
-            <a
-              href={registrationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
-            >
-              Register →
-            </a>
-          )}
-          <ShareButton href={`/events/${slug.current}`} label="Share Event" />
-        </div>
       </div>
+
+      {/* Actions */}
+      <EventCardActions
+        eventSlug={slug.current}
+        registrationUrl={registrationUrl}
+      />
     </div>
   )
 }

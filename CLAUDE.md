@@ -33,7 +33,7 @@ app/
     assets/page.tsx
     events/page.tsx + [slug]/page.tsx
     referrals/page.tsx
-    case-studies/page.tsx        # Stub — no Sanity schema yet
+    case-studies/page.tsx        # Client component — multi-select filters, card grid
   api/
     referrals/route.ts           # POST — create referral
     referrals/[id]/route.ts      # GET — fetch scout's referrals
@@ -41,12 +41,12 @@ components/
   layout/                        # Sidebar, TopNav, MobileNav
   ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton
   dashboard/                     # StatCard, QuickActions
-  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard
+  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
 lib/
   sanity/                        # Sanity client + GROQ queries
   supabase/                      # Supabase client + referral helpers
-sanity/schemas/                  # report, article, playbookPage, asset, event
+sanity/schemas/                  # report, article, playbookPage, asset, event, caseStudy
 middleware.ts                    # Clerk auth guard
 ```
 
@@ -167,9 +167,14 @@ Right column (`lg:col-span-1`):
 - On submit: success toast + form reset + new row in table below
 - Table: Prospect Name, Company, Service Interest, Date Submitted, Status badge
 
-### Case Studies (stub)
-- Placeholder page only — heading + subtitle + `EmptyState` component
-- **No Sanity schema built yet.** Schema, queries, and page data fetching are outstanding work.
+### Case Studies (client component)
+- `'use client'` page — filter state managed client-side with `useState`
+- Fetches all case studies from Sanity via `getCaseStudies()` in a `useEffect`
+- Industry and Service Type filters — multi-select `<select>` dropdowns in `CaseStudyFilters`; filters use `.includes()` since both fields are arrays on each document
+- Unique filter options derived via `.flatMap()` + `Array.from(new Set(...))`
+- Card grid: `grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl`
+- If no results after filtering: `EmptyState` component
+- `CaseStudyCard`: cover image (or `bg-cabin-mauve` placeholder), client label, title, description (`line-clamp-3`), industry + serviceType badges (renders defensively for both string and array), "View Case Study" `<a>` linking to `slideUrl` in new tab, "Download PDF" `<a>` (derives URL via `extractSlideUrls()` — replaces `/presentation/d/{id}` path with `/export/pdf`; hidden if ID can't be extracted)
 
 ---
 
@@ -180,15 +185,14 @@ Right column (`lg:col-span-1`):
 - Access is invite-only — Cabin admin sends invite links via Clerk dashboard
 - Scout's Clerk `user.id` is used as `scout_id` in all Supabase queries
 - Clerk JWT authenticates Supabase queries via RLS
-- `/case-studies` is **not yet added** to the middleware route matcher — add it when the page becomes real
-
 ```typescript
 // middleware.ts
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isPortalRoute = createRouteMatcher([
   '/dashboard(.*)', '/reports(.*)', '/articles(.*)',
-  '/playbook(.*)', '/assets(.*)', '/events(.*)', '/referrals(.*)'
+  '/playbook(.*)', '/assets(.*)', '/events(.*)', '/referrals(.*)',
+  '/case-studies(.*)'
 ])
 
 export default clerkMiddleware((auth, req) => {
@@ -209,7 +213,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 - **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
 - **asset**: `title, description, category (One-Pager|Email Template|Case Study|Video|Brand), file, videoUrl, thumbnail, copyableText`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
-- **caseStudy**: ⚠️ Not yet created — planned schema for the Case Studies section
+- **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured`
 
 ### Key GROQ Queries
 
@@ -232,6 +236,16 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 // Playbook pages
 *[_type == "playbookPage"] | order(section asc, order asc) { title, slug, section, order }
+
+// All case studies (getCaseStudies)
+*[_type == "caseStudy"] | order(_createdAt desc) {
+  _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured
+}
+
+// Featured case studies (getFeaturedCaseStudies)
+*[_type == "caseStudy" && featured == true] | order(_createdAt desc) {
+  _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl
+}
 ```
 
 ---
@@ -271,7 +285,7 @@ updated_at        timestamptz default now()
 | `/reports`, `/articles`, `/events`, `/assets` | ISR (60s) — CMS content |
 | `/reports/[slug]`, `/articles/[slug]`, `/events/[slug]` | ISR (60s) |
 | `/playbook/[slug]` | SSG + on-demand revalidation |
-| `/case-studies` | Static stub (no data fetching) |
+| `/case-studies` | Client component — client-side fetch + filter state |
 
 ---
 
@@ -314,8 +328,6 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Outstanding Work
 
-- **Case Studies schema** — Sanity schema (`caseStudy`), GROQ queries, page data fetching, and `[slug]` detail page not yet built
-- **Middleware** — `/case-studies` route not yet added to the Clerk route matcher in `middleware.ts`; add when the page becomes real
 - **`components/dashboard/`** — `EventCardActions` client component added (handles RSVP `window.open` + `stopPropagation` for the event card); `StatCard` and `QuickActions` files may be stale/unused after dashboard redesign
 
 ---
