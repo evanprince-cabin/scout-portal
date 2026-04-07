@@ -115,10 +115,10 @@ export default async function DashboardPage() {
       )}
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
         {/* Left column — lg:col-span-2 */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="xl:col-span-2 space-y-8">
 
           {/* Activity Feed */}
           <section>
@@ -198,32 +198,30 @@ export default async function DashboardPage() {
                   const variant: BadgeVariant = eventTypeVariant[event.eventType] ?? 'stone'
 
                   return (
-                    <Link key={event.slug.current} href={`/events/${event.slug.current}`} className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 flex gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block">
-                      <div
-                        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                        style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
-                      />
-                      {/* Date block */}
-                      <div className="relative z-10 flex-shrink-0 bg-cabin-mauve rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
-                        <span className="font-geist font-bold text-2xl text-cabin-charcoal leading-none">{dayNum}</span>
-                        <span className="font-inter text-xs font-semibold text-cabin-stone mt-0.5">{monthAbbr}</span>
-                      </div>
+                    <div key={event.slug.current} className="relative overflow-hidden bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 flex flex-wrap gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                      <Link href={`/events/${event.slug.current}`} className="absolute inset-0 z-0" aria-label={event.title} />
 
-                      {/* Event details */}
-                      <div className="relative z-10 flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                          <Badge variant={variant}>{event.eventType}</Badge>
-                          <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
-                            {locationLabel}
-                          </span>
+                      {/* Date block + Event details — always side by side */}
+                      <div className="flex gap-4 flex-1 min-w-0">
+                        <div className="flex-shrink-0 bg-cabin-mauve rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
+                          <span className="font-geist font-bold text-2xl text-cabin-charcoal leading-none">{dayNum}</span>
+                          <span className="font-inter text-xs font-semibold text-cabin-stone mt-0.5">{monthAbbr}</span>
                         </div>
-                        <h3 className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1">
-                          {event.title}
-                        </h3>
-                        <p className="text-xs font-inter text-cabin-stone mb-1.5">{timeStr} · {locationLabel}</p>
-                        {event.summary && (
-                          <p className="text-sm font-inter text-cabin-stone line-clamp-2">{event.summary}</p>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            <Badge variant={variant}>{event.eventType}</Badge>
+                            <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
+                              {locationLabel}
+                            </span>
+                          </div>
+                          <h3 className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1">
+                            {event.title}
+                          </h3>
+                          <p className="text-xs font-inter text-cabin-stone mb-1.5">{timeStr} · {locationLabel}</p>
+                          {event.summary && (
+                            <p className="text-sm font-inter text-cabin-stone line-clamp-2">{event.summary}</p>
+                          )}
+                        </div>
                       </div>
 
                       {/* Actions */}
@@ -231,7 +229,7 @@ export default async function DashboardPage() {
                         eventSlug={event.slug.current}
                         registrationUrl={event.registrationUrl}
                       />
-                    </Link>
+                    </div>
                   )
                 })}
               </div>
@@ -243,7 +241,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Right column — lg:col-span-1 */}
-        <div className="lg:col-span-1">
+        <div className="xl:col-span-1">
           <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
             Dive Deeper
           </p>
