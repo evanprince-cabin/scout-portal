@@ -116,3 +116,15 @@ export async function getEventBySlug(slug: string) {
     { slug }
   )
 }
+
+export async function getCaseStudies() {
+  return sanityClient.fetch(`*[_type == "caseStudy"] | order(_createdAt desc) {
+    _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured
+  }`)
+}
+
+export async function getFeaturedCaseStudies() {
+  return sanityClient.fetch(`*[_type == "caseStudy" && featured == true] | order(_createdAt desc) {
+    _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl
+  }`)
+}

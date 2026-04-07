@@ -8,6 +8,7 @@ const isPortalRoute = createRouteMatcher([
   '/assets(.*)',
   '/events(.*)',
   '/referrals(.*)',
+  '/case-studies(.*)',
 ])
 
 export default clerkMiddleware((auth, req) => {

@@ -5,6 +5,7 @@ import { article } from './sanity/schemas/article'
 import { playbookPage } from './sanity/schemas/playbookPage'
 import { asset } from './sanity/schemas/asset'
 import { event } from './sanity/schemas/event'
+import { caseStudy } from './sanity/schemas/caseStudy'
 
 export default defineConfig({
   basePath: '/studio',
@@ -12,7 +13,7 @@ export default defineConfig({
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? 'production',
   title: 'Cabin Scout Portal',
   schema: {
-    types: [report, article, playbookPage, asset, event],
+    types: [report, article, playbookPage, asset, event, caseStudy],
   },
   plugins: [structureTool()],
 })
