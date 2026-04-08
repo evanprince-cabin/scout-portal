@@ -22,9 +22,9 @@ export const asset = defineType({
       type: 'string',
       options: {
         list: [
-          { title: 'One-Pager', value: 'One-Pager' },
           { title: 'Email Template', value: 'Email Template' },
-          { title: 'Case Study', value: 'Case Study' },
+          { title: 'Message', value: 'Message' },
+          { title: 'One-Pager', value: 'One-Pager' },
           { title: 'Video', value: 'Video' },
           { title: 'Brand', value: 'Brand' },
         ],

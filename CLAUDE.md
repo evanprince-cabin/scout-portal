@@ -39,7 +39,7 @@ app/
     referrals/[id]/route.ts      # GET — fetch scout's referrals
 components/
   layout/                        # Sidebar, TopNav, MobileNav
-  ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton
+  ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal
   dashboard/                     # StatCard, QuickActions
   content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
@@ -133,7 +133,7 @@ Defined in `components/ui/Badge.tsx`:
 
 Left column (`lg:col-span-2`):
 - **Activity Feed** — card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page (assets → `/assets`). Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
-- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card is a full `<Link>` to the event detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; Share + RSVP buttons in `EventCardActions` client component (handles `stopPropagation`). CTA is `RSVP →`. Same dot-pattern hover as report banner. "View all events →" link in section header.
+- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card uses `absolute inset-0 z-0` Link to detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; `EventCardActions` client component on right (handles `stopPropagation`). CTA is "View on Meetup" (opens `registrationUrl` in new tab, `ExternalLink` icon). Same dot-pattern hover as report banner. "View all events →" link in section header.
 
 Right column (`lg:col-span-1`):
 - **Dive Deeper** section label (`text-xs font-semibold uppercase tracking-widest`)
@@ -157,10 +157,14 @@ Right column (`lg:col-span-1`):
 - Filterable grid by category
 - PDFs → Download; Email/LinkedIn templates → Copy to Clipboard + success toast; Videos → inline embed
 
-### Events (ISR 60s)
-- Upcoming first (asc), past events collapsed under toggle; filter by type
-- Card: cover image, event type badge, date, location, summary, RSVP button (formerly "Register" — renamed throughout)
-- Individual page: full details + registration CTA + share link
+### Events (`'use client'`, client-side fetch)
+- Fetches all events from Sanity via `getAllEvents()` in a `useEffect` (same pattern as Case Studies)
+- Upcoming first (asc), past events collapsed under toggle; filter by event type
+- Clicking a card opens `EventModal` — does **not** navigate to the detail page
+- Card style matches dashboard event cards exactly: date block (`bg-cabin-mauve rounded-xl`, large day + month abbr), event type Badge + location pill, title, time · location, summary (`line-clamp-2`); `EventCardActions` on the right ("View on Meetup" button with `ExternalLink` icon + `stopPropagation`)
+- Cards have `max-w-7xl` to prevent excessive stretching on wide viewports
+- Individual detail page still exists at `/events/[slug]` (ISR 60s) — accessible via "View Full Details →" in the modal or direct URL
+- `EventModal` (`components/ui/EventModal.tsx`): renders via `createPortal` at `document.body`, `z-[100]`. Props: `isOpen`, `onClose`, `title`, `slug`, `eventType`, `date`, `endDate?`, `location?`, `summary?`, `coverImage?`, `registrationUrl?`. Enter animation: backdrop fades in (`opacity-0 → opacity-100`), panel slides up (`translate-y-8 opacity-0 → translate-y-0 opacity-100`) over 300ms. Exit plays in reverse before unmounting. Escape key + backdrop click close the modal.
 
 ### Referrals (SSR)
 - Form: Prospect Name, Company, Email, Phone (optional), Service Interest (dropdown), Notes (optional)
@@ -282,7 +286,8 @@ updated_at        timestamptz default now()
 | Route | Strategy |
 |---|---|
 | `/dashboard`, `/referrals` | SSR (`force-dynamic`) — live Supabase data per scout |
-| `/reports`, `/articles`, `/events`, `/assets` | ISR (60s) — CMS content |
+| `/reports`, `/articles`, `/assets` | ISR (60s) — CMS content |
+| `/events` | Client component — client-side fetch + modal state |
 | `/reports/[slug]`, `/articles/[slug]`, `/events/[slug]` | ISR (60s) |
 | `/playbook/[slug]` | SSG + on-demand revalidation |
 | `/case-studies` | Client component — client-side fetch + filter state |
@@ -352,3 +357,4 @@ pnpm install
 **Phase 2:** Commission tracker, scout leaderboard (opt-in), email digest on new content
 **Phase 3:** Salesforce CRM sync for referral status, scout analytics for Cabin admins, personalized content recommendations
 **Community board (evaluate post-launch):** Circle.so/Discord embed (~1d), lightweight announcements feed (~3-5d), or full custom Supabase Realtime build (~2-3w)
+**Meetup → Sanity event sync (planned):** Zapier automation mapping Meetup event fields (`title`, `date`, `endDate`, `location`, `summary`, `registrationUrl`) to the Sanity `event` schema. Cover image not required — the modal and card render gracefully without it.
