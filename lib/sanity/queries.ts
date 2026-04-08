@@ -3,7 +3,7 @@ import { sanityClient } from './client'
 export async function getDashboardData() {
   return sanityClient.fetch(`{
     "latestReport": *[_type == "report"] | order(publishedDate desc) [0] {
-      title, slug, publishedDate, summary, coverImage
+      title, slug, publishedDate, quarter, year, summary, coverImage
     },
     "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] {
       title, slug, date, eventType, location, registrationUrl, summary
@@ -31,6 +31,13 @@ export async function getDashboardData() {
 export async function getAllReports() {
   return sanityClient.fetch(`*[_type == "report"] | order(publishedDate desc) {
     title, slug, publishedDate, coverImage, summary
+  }`)
+}
+
+export async function getReports() {
+  return sanityClient.fetch(`*[_type == "report"] | order(year desc, quarter desc) {
+    _id, title, slug, publishedDate, quarter, year, summary,
+    pdfDownload { asset-> { url } }
   }`)
 }
 

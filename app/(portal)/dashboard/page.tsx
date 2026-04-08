@@ -90,12 +90,8 @@ export default async function DashboardPage() {
       {latestReport && (
         <Link
           href={`/reports/${latestReport.slug.current}`}
-          className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 w-full hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 mb-8 block"
+          className="relative overflow-hidden bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 w-full hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 mb-8 block"
         >
-          <div
-            className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-            style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
-          />
           <div className="relative z-10">
             <p className="text-xs font-semibold uppercase tracking-widest text-cabin-flame mb-1">
               ▲ Latest Report

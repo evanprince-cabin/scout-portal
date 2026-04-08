@@ -39,7 +39,7 @@ app/
     referrals/[id]/route.ts      # GET — fetch scout's referrals
 components/
   layout/                        # Sidebar, TopNav, MobileNav
-  ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal
+  ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal, AssetModal
   dashboard/                     # StatCard, QuickActions
   content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
@@ -154,8 +154,12 @@ Right column (`lg:col-span-1`):
 - Sidebar collapses to dropdown on mobile
 
 ### Assets (ISR 60s)
-- Filterable grid by category
-- PDFs → Download; Email/LinkedIn templates → Copy to Clipboard + success toast; Videos → inline embed
+- Filterable grid by category: All, Email Template, Message, One-Pager, Video, Brand
+- Cards use `components/content/AssetCard.tsx` — custom SVG icon per category, type badge (`#F0EBE3` pill, 10px Inter 700 uppercase `#4B0214`), title, description, date, action button. Card is fully clickable (opens `AssetModal`); action button click is wrapped in `stopPropagation`.
+- Action logic: Email Template + Message → Copy to Clipboard (copies `copyableText`, shows "Copied!" 2s); One-Pager + Brand + Video → Download (links to `file.asset.url` with `download` attribute)
+- Video no longer uses inline embed — treated as a downloadable file
+- Clicking any card opens `AssetModal` (see below)
+- `AssetModal` (`components/ui/AssetModal.tsx`): renders via `createPortal` at `document.body`, `z-[100]`. Props: `isOpen`, `onClose`, `title`, `description?`, `category`, `date?`, `fileUrl`, `videoUrl`, `copyableText`, `thumbnail?`. Enter animation: backdrop fades in, panel slides up (`translate-y-8 opacity-0 → translate-y-0 opacity-100`) over 300ms. Exit plays in reverse before unmounting. Escape key + backdrop click + X button close the modal. Preview section: Email Template/Message → `copyableText` in a scrollable `bg-cabin-linen` block; Video → `<iframe src={videoUrl}>` (only if `videoUrl` exists); One-Pager/Brand → `<Image>` from `thumbnail` via `urlFor` (fallback to "No preview available" if no thumbnail). Bottom bar: Copy to Clipboard or Download button styled as `bg-cabin-maroon` pill.
 
 ### Events (`'use client'`, client-side fetch)
 - Fetches all events from Sanity via `getAllEvents()` in a `useEffect` (same pattern as Case Studies)
@@ -215,7 +219,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 - **report**: `title, slug, publishedDate, coverImage, summary, body, pdfDownload`
 - **article**: `title, slug, publishedDate, category (Strategy|Engineering|Design|AI|Salesforce), coverImage, summary, body, featured`
 - **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
-- **asset**: `title, description, category (One-Pager|Email Template|Case Study|Video|Brand), file, videoUrl, thumbnail, copyableText`
+- **asset**: `title, description, category (Email Template|Message|One-Pager|Video|Brand), file, videoUrl, thumbnail, copyableText`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
 - **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured`
 

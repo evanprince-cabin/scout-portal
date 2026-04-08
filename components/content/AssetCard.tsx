@@ -82,17 +82,7 @@ export default function AssetCard({ asset }: { asset: Asset }) {
     <>
       <div
         onClick={() => setIsModalOpen(true)}
-        style={{
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E5E0D8',
-          borderRadius: 12,
-          padding: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-          minHeight: 215,
-          cursor: 'pointer',
-        }}
+        className="bg-white border border-[#E5E0D8] rounded-xl p-5 flex flex-col gap-[14px] min-h-[215px] cursor-pointer hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
       >
         {/* Top row: icon + type badge */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
