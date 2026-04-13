@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import { Download } from 'lucide-react'
-import Badge from '@/components/ui/Badge'
 import { urlFor } from '@/lib/sanity/image'
 
 function extractSlideUrls(slideUrl: string) {
@@ -33,60 +32,79 @@ export default function CaseStudyCard({
   slideUrl,
 }: CaseStudyCardProps) {
   const { viewUrl, downloadUrl } = extractSlideUrls(slideUrl)
+  const industryArr = Array.isArray(industry) ? industry : [industry]
+  const serviceTypeArr = Array.isArray(serviceType) ? serviceType : [serviceType]
 
   return (
-    <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl overflow-hidden hover:shadow-md hover:border-cabin-stone/40 transition-all duration-150 flex flex-col">
-      {coverImage ? (
-        <div className="relative h-48 w-full">
+    <div className="relative flex items-start gap-6 py-7 px-4 rounded-xl hover:bg-cabin-mauve/20 transition-colors duration-150">
+      {/* Clickable overlay — makes the whole row navigate to the slide */}
+      <a
+        href={viewUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute inset-0 z-0"
+        aria-label={`View ${title} case study`}
+      />
+
+      {/* Thumbnail */}
+      <div className="relative z-[1] w-[180px] h-[114px] flex-shrink-0 rounded-[14px] overflow-hidden pointer-events-none border border-cabin-stone/15 shadow-sm">
+        {coverImage ? (
           <Image
             src={urlFor(coverImage)}
             alt={title}
-            fill
-            className="object-cover"
+            width={180}
+            height={114}
+            className="object-cover w-full h-full"
           />
-        </div>
-      ) : (
-        <div className="h-48 w-full bg-cabin-mauve" />
-      )}
+        ) : (
+          <div className="w-full h-full bg-cabin-mauve" />
+        )}
+      </div>
 
-      <div className="p-5 flex flex-col flex-1">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
-            {client}
-          </span>
-        </div>
+      {/* Content */}
+      <div className="relative z-[1] flex-1 flex flex-col gap-1.5 pt-0.5 min-w-0 pointer-events-none">
+        <span className="text-sm font-bold uppercase tracking-[0.09em] text-cabin-flame font-inter">
+          {client}
+        </span>
 
-        <h3 className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mt-1 mb-2">
+        <h3 className="font-geist font-semibold text-[19px] text-cabin-charcoal leading-snug">
           {title}
         </h3>
 
-        <p className="font-inter text-sm text-cabin-stone line-clamp-3 mb-4">
+        <p className="font-inter text-[13.5px] text-cabin-stone leading-relaxed">
           {description}
         </p>
 
-        <div className="flex flex-wrap gap-2">
-          {(Array.isArray(industry) ? industry : [industry]).map((v) => <Badge key={v} variant="stone">{v}</Badge>)}
-          {(Array.isArray(serviceType) ? serviceType : [serviceType]).map((v) => <Badge key={v} variant="stone">{v}</Badge>)}
-        </div>
+        <div className="flex items-center justify-between gap-4 mt-1">
+          <div className="flex flex-wrap gap-1.5">
+            {industryArr.map((v) => (
+              <span
+                key={v}
+                className="bg-cabin-linen border border-cabin-stone/20 rounded-full px-2.5 py-0.5 text-sm font-medium text-cabin-stone font-inter"
+              >
+                {v}
+              </span>
+            ))}
+            {serviceTypeArr.map((v) => (
+              <span
+                key={v}
+                className="border border-cabin-stone/20 rounded-full px-2.5 py-0.5 text-sm font-medium text-cabin-stone font-inter"
+              >
+                {v}
+              </span>
+            ))}
+          </div>
 
-        <div className="mt-auto pt-4">
-          <a
-            href={viewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-cabin-maroon text-white rounded-full px-5 py-2 text-sm font-inter font-medium hover:bg-cabin-charcoal transition-colors duration-150 w-full text-center block"
-          >
-            View Case Study
-          </a>
           {downloadUrl && (
             <a
               href={downloadUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center justify-center gap-1.5 w-full rounded-full border border-cabin-stone/30 px-5 py-2 text-sm font-inter font-medium text-cabin-stone hover:border-cabin-maroon/40 hover:text-cabin-maroon transition-colors duration-150"
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-[2] pointer-events-auto inline-flex items-center gap-1 text-sm font-inter font-semibold text-cabin-stone hover:text-cabin-maroon transition-colors duration-150"
             >
-              <Download size={14} />
-              Download PDF
+              <Download size={12} />
+              PDF
             </a>
           )}
         </div>

@@ -31,11 +31,13 @@ export default function CaseStudiesPage() {
   const industries = Array.from(new Set(caseStudies.flatMap((cs) => cs.industry ?? []))).sort()
   const serviceTypes = Array.from(new Set(caseStudies.flatMap((cs) => cs.serviceType ?? []))).sort()
 
-  const filtered = caseStudies.filter((cs) => {
-    if (selectedIndustry && !cs.industry?.includes(selectedIndustry)) return false
-    if (selectedServiceType && !cs.serviceType?.includes(selectedServiceType)) return false
-    return true
-  })
+  const filtered = caseStudies
+    .filter((cs) => {
+      if (selectedIndustry && !cs.industry?.includes(selectedIndustry)) return false
+      if (selectedServiceType && !cs.serviceType?.includes(selectedServiceType)) return false
+      return true
+    })
+    .sort((a, b) => a.client.localeCompare(b.client))
 
   return (
     <div className="space-y-8 page-enter">
@@ -61,7 +63,7 @@ export default function CaseStudiesPage() {
           subtext="Try adjusting your filters or check back later."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 max-w-5xl">
+        <div className="flex flex-col divide-y divide-cabin-stone/10">
           {filtered.map((cs) => (
             <CaseStudyCard
               key={cs._id}
