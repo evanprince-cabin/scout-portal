@@ -36,7 +36,7 @@ export default function CaseStudyCard({
   const serviceTypeArr = Array.isArray(serviceType) ? serviceType : [serviceType]
 
   return (
-    <div className="relative flex items-start gap-6 py-7 px-4 rounded-xl hover:bg-cabin-mauve/20 transition-colors duration-150">
+    <div className="relative flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 py-7 px-4 rounded-xl hover:bg-cabin-mauve/20 transition-colors duration-150">
       {/* Clickable overlay — makes the whole row navigate to the slide */}
       <a
         href={viewUrl}
@@ -47,7 +47,7 @@ export default function CaseStudyCard({
       />
 
       {/* Thumbnail */}
-      <div className="relative z-[1] w-[180px] h-[114px] flex-shrink-0 rounded-[14px] overflow-hidden pointer-events-none border border-cabin-stone/15 shadow-sm">
+      <div className="relative z-[1] w-full h-48 sm:w-[180px] sm:h-[114px] sm:flex-shrink-0 rounded-[14px] overflow-hidden pointer-events-none border border-cabin-stone/15 shadow-sm">
         {coverImage ? (
           <Image
             src={urlFor(coverImage)}
