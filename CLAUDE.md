@@ -140,8 +140,16 @@ Right column (`lg:col-span-1`):
 - Two stacked action cards (`space-y-3`): "Recorded Tech Talks" (PlayCircle icon → `https://www.youtube.com/@cabinco`, `target="_blank"`), "Study the Playbook" (BookOpen icon → `/playbook`). Titles are `text-base font-semibold`.
 - Same dot-pattern hover effect as report banner and event cards.
 
-### Reports (ISR 60s)
-- Grid sorted newest first; card: cover image, month/year, summary, "Read Report" CTA
+### Reports (`'use client'`, client-side fetch)
+- Fetches all reports from Sanity via `getReports()` in a `useEffect`
+- Reports grouped by year into collapsible accordion sections, sorted by year descending
+- Most recent year open by default; `Record<number, boolean>` state tracks open/closed per year
+- Clicking the year header row toggles the section; smooth expand/collapse via CSS `grid-template-rows` transition
+- Each year section: `bg-[#F6F6F7] rounded-2xl`, header shows year label (`font-geist font-bold text-2xl text-cabin-maroon`) + `ChevronUp`/`ChevronDown` icon
+- Cards grid: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4` — only renders cards that exist (no empty placeholders)
+- Each card: `bg-white rounded-[14px] border border-cabin-stone/20 border-l-2 border-l-cabin-flame p-5 flex flex-col gap-2 min-h-[140px]` — entire card is a `<Link>` to `/reports/[slug]`
+- Card layout: quarter label (`font-geist font-bold text-[32px] text-cabin-flame`), title (`font-inter text-sm font-medium text-cabin-charcoal line-clamp-2`), bottom row with publish date (`text-[11px] text-[#B0ABA6]`) and PDF download link (`<a target="_blank">` with Lucide `Download` icon, `stopPropagation` so it doesn't trigger card navigation)
+- Hover: `hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`
 - Individual page: rich text + optional PDF download
 
 ### Articles (ISR 60s)
@@ -216,7 +224,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 ### Schemas
 
-- **report**: `title, slug, publishedDate, coverImage, summary, body, pdfDownload`
+- **report**: `title, slug, publishedDate, quarter (Q1|Q2|Q3|Q4 — radio, required), year (number, required), coverImage, summary, body, pdfDownload`
 - **article**: `title, slug, publishedDate, category (Strategy|Engineering|Design|AI|Salesforce), coverImage, summary, body, featured`
 - **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
 - **asset**: `title, description, category (Email Template|Message|One-Pager|Video|Brand), file, videoUrl, thumbnail, copyableText`
@@ -228,7 +236,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 ```groq
 // Dashboard (getDashboardData)
 {
-  "latestReport": *[_type == "report"] | order(publishedDate desc) [0] { title, slug, publishedDate, summary, coverImage },
+  "latestReport": *[_type == "report"] | order(publishedDate desc) [0] { title, slug, publishedDate, quarter, year, summary, coverImage },
   "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] { title, slug, date, eventType, location, registrationUrl, summary },
   "activityFeed": {
     "reports":      *[_type == "report"]      | order(_createdAt desc) [0..2] { "contentType": "report",      title, _createdAt, slug },
@@ -253,6 +261,12 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 // Featured case studies (getFeaturedCaseStudies)
 *[_type == "caseStudy" && featured == true] | order(_createdAt desc) {
   _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl
+}
+
+// All reports for Reports page (getReports)
+*[_type == "report"] | order(year desc, quarter desc) {
+  _id, title, slug, publishedDate, quarter, year, summary,
+  pdfDownload { asset-> { url } }
 }
 ```
 
@@ -290,7 +304,8 @@ updated_at        timestamptz default now()
 | Route | Strategy |
 |---|---|
 | `/dashboard`, `/referrals` | SSR (`force-dynamic`) — live Supabase data per scout |
-| `/reports`, `/articles`, `/assets` | ISR (60s) — CMS content |
+| `/reports` | Client component — client-side fetch + accordion state |
+| `/articles`, `/assets` | ISR (60s) — CMS content |
 | `/events` | Client component — client-side fetch + modal state |
 | `/reports/[slug]`, `/articles/[slug]`, `/events/[slug]` | ISR (60s) |
 | `/playbook/[slug]` | SSG + on-demand revalidation |
@@ -338,6 +353,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 ## Outstanding Work
 
 - **`components/dashboard/`** — `EventCardActions` client component added (handles RSVP `window.open` + `stopPropagation` for the event card); `StatCard` and `QuickActions` files may be stale/unused after dashboard redesign
+- **`components/content/ReportCard.tsx`** — deleted; Reports page was rewritten as a client component with inline card rendering, making this component unused
 
 ---
 
