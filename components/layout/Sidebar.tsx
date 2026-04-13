@@ -90,14 +90,14 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                     className={`
                       flex items-center gap-3 px-3 py-2 rounded-full text-sm font-inter font-medium transition-colors duration-150
                       ${isActive
-                        ? 'bg-cabin-maroon text-white'
-                        : 'text-cabin-stone hover:bg-cabin-mauve hover:text-cabin-charcoal'
+                        ? 'bg-gray-200 border border-gray-300 text-cabin-charcoal font-medium'
+                        : 'text-cabin-stone border border-transparent hover:bg-white hover:border-cabin-stone/20 hover:text-cabin-charcoal'
                       }
                     `}
                   >
                     <Icon
                       size={16}
-                      className={isActive ? 'text-white' : 'text-current'}
+                      className="text-current"
                     />
                     {label}
                   </Link>

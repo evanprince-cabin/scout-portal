@@ -15,3 +15,11 @@
   background-image: radial-gradient(circle, #E9DBDE 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* Clerk footer override */
+.cl-internal-1c2qq50,
+.cl-internal-h2zfvr,
+.cl-internal-1dauvpw {
+  background-color: #F5F3F0 !important;
+  background: #F5F3F0 !important;
+}
