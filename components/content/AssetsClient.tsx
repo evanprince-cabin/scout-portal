@@ -4,7 +4,7 @@ import { useState } from 'react'
 import AssetCard, { type Asset } from '@/components/content/AssetCard'
 import EmptyState from '@/components/ui/EmptyState'
 
-const CATEGORIES = ['All', 'Email Template', 'Message', 'One-Pager', 'Video', 'Brand'] as const
+const CATEGORIES = ['All', 'Email Template', 'Message', 'One-Pager', 'Slide Deck', 'Video', 'Brand'] as const
 
 const IconAsset = () => (
   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

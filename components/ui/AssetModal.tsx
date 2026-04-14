@@ -7,7 +7,7 @@ import { X } from 'lucide-react'
 import { urlFor } from '@/lib/sanity/image'
 
 const COPY_CATEGORIES = new Set(['Email Template', 'Message'])
-const THUMBNAIL_PREVIEW_CATEGORIES = new Set(['One-Pager', 'Brand'])
+const THUMBNAIL_PREVIEW_CATEGORIES = new Set(['One-Pager', 'Brand', 'Slide Deck'])
 
 interface AssetModalProps {
   isOpen: boolean

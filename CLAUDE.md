@@ -162,7 +162,7 @@ Right column (`lg:col-span-1`):
 - Sidebar collapses to dropdown on mobile
 
 ### Assets (ISR 60s)
-- Filterable grid by category: All, Email Template, Message, One-Pager, Video, Brand
+- Filterable grid by category: All, Email Template, Message, One-Pager, Slide Deck, Video, Brand
 - Cards use `components/content/AssetCard.tsx` — custom SVG icon per category, type badge (`#F0EBE3` pill, 10px Inter 700 uppercase `#4B0214`), title, description, date, action button. Card is fully clickable (opens `AssetModal`); action button click is wrapped in `stopPropagation`.
 - Action logic: Email Template + Message → Copy to Clipboard (copies `copyableText`, shows "Copied!" 2s); One-Pager + Brand + Video → Download (links to `file.asset.url` with `download` attribute)
 - Video no longer uses inline embed — treated as a downloadable file
@@ -227,7 +227,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 - **report**: `title, slug, publishedDate, quarter (Q1|Q2|Q3|Q4 — radio, required), year (number, required), coverImage, summary, body, pdfDownload`
 - **article**: `title, slug, publishedDate, category (Strategy|Engineering|Design|AI|Salesforce), coverImage, summary, body, featured`
 - **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
-- **asset**: `title, description, category (Email Template|Message|One-Pager|Video|Brand), file, videoUrl, thumbnail, copyableText`
+- **asset**: `title, description, category (Email Template|Message|One-Pager|Slide Deck|Video|Brand), file, videoUrl, thumbnail, copyableText`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
 - **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured`
 

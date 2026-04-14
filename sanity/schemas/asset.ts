@@ -25,6 +25,7 @@ export const asset = defineType({
           { title: 'Email Template', value: 'Email Template' },
           { title: 'Message', value: 'Message' },
           { title: 'One-Pager', value: 'One-Pager' },
+          { title: 'Slide Deck', value: 'Slide Deck' },
           { title: 'Video', value: 'Video' },
           { title: 'Brand', value: 'Brand' },
         ],
