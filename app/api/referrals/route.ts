@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   try {
     // TODO: confirm Cabin's verified sending domain in Resend and update the from address
     await resend.emails.send({
-      from: 'noreply@cabinco.com',
+      from: 'Cabin Scout Portal <onboarding@resend.dev>',
       to: process.env.REFERRAL_NOTIFY_EMAIL!,
       subject: `New Referral: ${prospect_name.trim()} at ${company.trim()}`,
       html: `
