@@ -41,11 +41,12 @@ components/
   layout/                        # Sidebar, TopNav, MobileNav
   ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal, AssetModal
   dashboard/                     # StatCard, QuickActions
-  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
+  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters, FaqAccordion, PitchingResource
   referrals/                     # ReferralForm, ReferralTable
 lib/
   sanity/                        # Sanity client + GROQ queries
   supabase/                      # Supabase client + referral helpers
+  slides.ts                      # getSlidesThumbnailUrl(url) — extracts Google Slides ID, returns drive.google.com/thumbnail URL (requires public share)
 sanity/schemas/                  # report, article, playbookPage, asset, event, caseStudy
 middleware.ts                    # Clerk auth guard
 ```
@@ -158,8 +159,12 @@ Right column (`lg:col-span-1`):
 - **Not in sidebar nav** — accessible directly by URL only
 
 ### Playbook (SSG + on-demand revalidation)
-- Left sidebar nav by section; rich text content per page
-- Sidebar collapses to dropdown on mobile
+- Left sidebar nav by section; sidebar collapses to dropdown on mobile
+- **Dual-template pattern** — `[slug]/page.tsx` checks `page.format` to choose which template to render:
+  - `'pitching-resource'` → `PitchingResource` component (`components/content/PitchingResource.tsx`, `'use client'`): short description, clickable 16:9 thumbnail card (`max-w-[400px]`, `getSlidesThumbnailUrl` from `lib/slides.ts`, overlay badge with `resourceLabel`). If the live thumbnail fails (private deck, non-Slides URL, etc.), falls back to `public/playbook-thumbnail-fallback.png` — still rendered as a clickable card. CTA renders as muted/disabled only when `resourceUrl` is empty. TLDR bullet list and "When to use this" card below.
+  - `undefined` / `'longform'` → existing `RichText` body + optional `FaqAccordion` (FAQ pages only)
+- Pitching section uses the `pitching-resource` format. FAQ section uses the long-form format with `faq[]` items.
+- `getAllPlaybookPages` only fetches `title, slug, section, order` — sidebar is unaffected by format
 
 ### Assets (ISR 60s)
 - Filterable grid by category: All, Email Template, Message, One-Pager, Slide Deck, Video, Brand
@@ -226,7 +231,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 - **report**: `title, slug, publishedDate, quarter (Q1|Q2|Q3|Q4 — radio, required), year (number, required), coverImage, summary, body, pdfDownload`
 - **article**: `title, slug, publishedDate, category (Strategy|Engineering|Design|AI|Salesforce), coverImage, summary, body, featured`
-- **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
+- **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, faq[] { question, answer }, format (longform|pitching-resource — radio), description (text), resourceUrl (url), resourceLabel (string), tldr (array of string), whenToUse (string), order`
 - **asset**: `title, description, category (Email Template|Message|One-Pager|Slide Deck|Video|Brand), file, videoUrl, thumbnail, copyableText`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
 - **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured`
@@ -335,6 +340,16 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+---
+
+## next.config.mjs — Image Remote Patterns
+
+`next/image` is configured to proxy images from:
+- `cdn.sanity.io` — Sanity-hosted assets
+- `docs.google.com`, `lh3.googleusercontent.com`, `drive.google.com` — Google Slides/Drive thumbnails
+
+Add new hostnames here before using `<Image>` with any external domain.
 
 ---
 

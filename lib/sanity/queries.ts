@@ -16,7 +16,8 @@ export async function getDashboardData() {
         "contentType": "article", title, _createdAt, slug
       },
       "playbookPages": *[_type == "playbookPage"] | order(_createdAt desc) [0..2] {
-        "contentType": "playbookPage", title, _createdAt, slug
+        "contentType": "playbookPage", title, _createdAt, slug,
+        faq[] { question, answer }
       },
       "assets": *[_type == "asset"] | order(_createdAt desc) [0..2] {
         "contentType": "asset", title, _createdAt
@@ -83,7 +84,9 @@ export async function getAllPlaybookPages() {
 export async function getPlaybookPageBySlug(slug: string) {
   return sanityClient.fetch(
     `*[_type == "playbookPage" && slug.current == $slug][0] {
-      title, slug, section, body, order
+      title, slug, section, body, order,
+      faq[] { question, answer },
+      format, description, resourceUrl, resourceLabel, tldr, whenToUse
     }`,
     { slug }
   )

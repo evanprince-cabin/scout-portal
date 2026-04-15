@@ -4,6 +4,8 @@ import { getAllPlaybookPages, getPlaybookPageBySlug } from '@/lib/sanity/queries
 import Badge from '@/components/ui/Badge'
 import RichText from '@/components/content/RichText'
 import PlaybookSidebar from '@/components/content/PlaybookSidebar'
+import FaqAccordion from '@/components/content/FaqAccordion'
+import PitchingResource from '@/components/content/PitchingResource'
 
 export const dynamic = 'force-static'
 
@@ -50,10 +52,27 @@ export default async function PlaybookSlugPage({ params }: { params: { slug: str
             {currentPage.title}
           </h1>
 
-          {currentPage.body ? (
-            <RichText value={currentPage.body} />
+          {currentPage.format === 'pitching-resource' ? (
+            <PitchingResource
+              description={currentPage.description}
+              resourceUrl={currentPage.resourceUrl}
+              resourceLabel={currentPage.resourceLabel || 'View Presentation'}
+              tldr={currentPage.tldr ?? []}
+              whenToUse={currentPage.whenToUse}
+            />
           ) : (
-            <p className="font-inter text-cabin-stone">No content yet.</p>
+            <>
+              {currentPage.body ? (
+                <RichText value={currentPage.body} />
+              ) : (
+                <p className="font-inter text-cabin-stone">No content yet.</p>
+              )}
+              {currentPage.faq && currentPage.faq.length > 0 && (
+                <div className="mt-8">
+                  <FaqAccordion items={currentPage.faq} />
+                </div>
+              )}
+            </>
           )}
 
           {/* Prev / Next navigation */}
