@@ -1,26 +1,55 @@
 import Link from 'next/link'
+import { Send, FolderOpen, FileText } from 'lucide-react'
 
-export default function QuickActions() {
+interface QuickActionsProps {
+  latestReportSlug: string | null
+}
+
+const actions = (slug: string | null) => [
+  {
+    icon: Send,
+    iconColor: 'text-cabin-flame',
+    iconBg: 'bg-cabin-flame/10',
+    title: 'Send a Referral',
+    description: 'Refer a new prospect to Cabin',
+    href: '/referrals',
+  },
+  {
+    icon: FolderOpen,
+    iconColor: 'text-cabin-indigo',
+    iconBg: 'bg-cabin-sky',
+    title: 'Find an Asset',
+    description: 'Browse sales tools and templates',
+    href: '/assets',
+  },
+  {
+    icon: FileText,
+    iconColor: 'text-cabin-grass',
+    iconBg: 'bg-cabin-lime',
+    title: 'Read Latest Report',
+    description: "Read Cabin's most recent field report",
+    href: slug ? `/reports/${slug}` : '/reports',
+  },
+]
+
+export default function QuickActions({ latestReportSlug }: QuickActionsProps) {
   return (
-    <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-      <Link
-        href="/referrals"
-        className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 w-full sm:w-auto"
-      >
-        Submit a Referral
-      </Link>
-      <Link
-        href="/assets"
-        className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium bg-cabin-gold text-cabin-charcoal hover:opacity-90 transition-colors duration-150 w-full sm:w-auto"
-      >
-        Browse Assets
-      </Link>
-      <Link
-        href="/playbook"
-        className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-inter font-medium border border-cabin-stone text-cabin-charcoal hover:bg-cabin-mauve transition-colors duration-150 w-full sm:w-auto"
-      >
-        Read the Playbook
-      </Link>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {actions(latestReportSlug).map(({ icon: Icon, iconColor, iconBg, title, description, href }) => (
+        <Link
+          key={href}
+          href={href}
+          className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-center gap-4 hover:shadow-md hover:border-cabin-stone/40 hover:-translate-y-0.5 transition-all duration-150"
+        >
+          <div className={`flex-shrink-0 ${iconBg} p-2 rounded-lg`}>
+            <Icon className={`w-5 h-5 ${iconColor}`} />
+          </div>
+          <div>
+            <p className="font-geist font-semibold text-base text-cabin-charcoal">{title}</p>
+            <p className="font-inter text-sm text-cabin-stone mt-0.5">{description}</p>
+          </div>
+        </Link>
+      ))}
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { getDashboardData } from '@/lib/sanity/queries'
 import { getReferralStats } from '@/lib/supabase/referrals'
 import Badge from '@/components/ui/Badge'
 import EventCardActions from '@/components/dashboard/EventCardActions'
+import QuickActions from '@/components/dashboard/QuickActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,16 +68,10 @@ export default async function DashboardPage() {
 
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between">
+        <div>
           <span className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
             Field Status • Q1 2026
           </span>
-          <Link
-            href="/referrals"
-            className="bg-cabin-maroon text-white rounded-full px-5 py-2 text-sm font-medium hover:bg-cabin-charcoal transition-colors duration-150"
-          >
-            Send a Referral →
-          </Link>
         </div>
         <div className="inline-block mt-4">
           <h1 className="font-geist font-bold text-4xl lg:text-5xl tracking-tight text-cabin-charcoal">
@@ -86,29 +81,9 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Latest Report Banner */}
-      {latestReport && (
-        <Link
-          href={`/reports/${latestReport.slug.current}`}
-          className="relative overflow-hidden bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 w-full hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 mb-8 block"
-        >
-          <div className="relative z-10">
-            <p className="text-xs font-semibold uppercase tracking-widest text-cabin-flame mb-1">
-              ▲ Latest Report
-            </p>
-            <p className="font-geist font-semibold text-cabin-charcoal text-lg leading-snug">
-              {latestReport.title}
-            </p>
-            <p className="mt-1 text-sm font-inter text-cabin-stone">
-              {new Date(latestReport.publishedDate).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </p>
-          </div>
-        </Link>
-      )}
+      {/* Quick Actions */}
+      <QuickActions latestReportSlug={latestReport?.slug?.current ?? null} />
+
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

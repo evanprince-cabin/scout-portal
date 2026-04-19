@@ -41,12 +41,11 @@ components/
   layout/                        # Sidebar, TopNav, MobileNav
   ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal, AssetModal
   dashboard/                     # StatCard, QuickActions
-  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters, FaqAccordion, PitchingResource
+  content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
 lib/
   sanity/                        # Sanity client + GROQ queries
   supabase/                      # Supabase client + referral helpers
-  slides.ts                      # getSlidesThumbnailUrl(url) — extracts Google Slides ID, returns drive.google.com/thumbnail URL (requires public share)
 sanity/schemas/                  # report, article, playbookPage, asset, event, caseStudy
 middleware.ts                    # Clerk auth guard
 ```
@@ -89,6 +88,8 @@ MY SCOUT
 - `cabin-flame` — accent color (underlines, icon highlights)
 - `cabin-sky` / `cabin-indigo` — report/blue accent
 - `cabin-gold` — asset/download accent
+- `cabin-lime` / `cabin-grass` — green accent (Quick Actions, success states)
+- `cabin-lilac` / `cabin-mulberry` — purple accent
 
 ### Layout
 - **Sidebar**: `w-60`, `bg-cabin-linen`, fixed left, hidden on mobile. Active nav item: `bg-cabin-maroon text-white rounded-full`.
@@ -120,15 +121,21 @@ Defined in `components/ui/Badge.tsx`:
 ### Dashboard (`force-dynamic`, SSR)
 
 **Header:**
-- Top row: `FIELD STATUS • Q1 2026` label (left, `text-xs font-semibold uppercase tracking-widest`) + `Send a Referral →` pill button linking to `/referrals` (right, `bg-cabin-maroon rounded-full`)
+- Top row: `FIELD STATUS • Q1 2026` label (`text-xs font-semibold uppercase tracking-widest`)
 - Title: `Welcome back [First Name].` — `text-4xl lg:text-5xl font-bold font-geist` — first name from Clerk `currentUser()`, no emoji
 - Accent underline: `border-b-2 border-cabin-flame` — `inline-block` wrapper so the underline hugs the text width
 
-**Latest Report Banner** (full-width, below header):
-- Full-width `<Link>` to `/reports/[slug]` — entire card is clickable
-- `▲ Latest Report` label in `text-cabin-flame`, report title in `text-lg font-semibold`, formatted publish date below
-- Hover effect: dot-pattern radial-gradient overlay (fades in via `group-hover:opacity-100`), `hover:shadow-md`, `hover:-translate-y-0.5`, `hover:border-cabin-maroon/30`
-- Renders nothing if no report exists in Sanity
+**Quick Actions row** (below header, above two-column layout):
+- `components/dashboard/QuickActions.tsx` — accepts `latestReportSlug: string | null`
+- `grid-cols-1 sm:grid-cols-3 gap-4` — three cards, each a `<Link>`
+- Card: `bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-center gap-4` + standard hover
+- Each card: icon chip (`flex-shrink-0 p-2 rounded-lg`, icon `w-5 h-5`) + stacked title/description
+- Three actions and their color theming:
+  | Action | Icon | Icon color | Icon bg | href |
+  |---|---|---|---|---|
+  | Send a Referral | `Send` | `text-cabin-flame` | `bg-cabin-flame/10` | `/referrals` |
+  | Find an Asset | `FolderOpen` | `text-cabin-indigo` | `bg-cabin-sky` | `/assets` |
+  | Read Latest Report | `FileText` | `text-cabin-grass` | `bg-cabin-lime` | `/reports/[slug]` or `/reports` |
 
 **Two-column layout** (`grid-cols-1 lg:grid-cols-3 gap-8`):
 
@@ -159,15 +166,11 @@ Right column (`lg:col-span-1`):
 - **Not in sidebar nav** — accessible directly by URL only
 
 ### Playbook (SSG + on-demand revalidation)
-- Left sidebar nav by section; sidebar collapses to dropdown on mobile
-- **Dual-template pattern** — `[slug]/page.tsx` checks `page.format` to choose which template to render:
-  - `'pitching-resource'` → `PitchingResource` component (`components/content/PitchingResource.tsx`, `'use client'`): short description, clickable 16:9 thumbnail card (`max-w-[400px]`, `getSlidesThumbnailUrl` from `lib/slides.ts`, overlay badge with `resourceLabel`). If the live thumbnail fails (private deck, non-Slides URL, etc.), falls back to `public/playbook-thumbnail-fallback.png` — still rendered as a clickable card. CTA renders as muted/disabled only when `resourceUrl` is empty. TLDR bullet list and "When to use this" card below.
-  - `undefined` / `'longform'` → existing `RichText` body + optional `FaqAccordion` (FAQ pages only)
-- Pitching section uses the `pitching-resource` format. FAQ section uses the long-form format with `faq[]` items.
-- `getAllPlaybookPages` only fetches `title, slug, section, order` — sidebar is unaffected by format
+- Left sidebar nav by section; rich text content per page
+- Sidebar collapses to dropdown on mobile
 
 ### Assets (ISR 60s)
-- Filterable grid by category: All, Email Template, Message, One-Pager, Slide Deck, Video, Brand
+- Filterable grid by category: All, Email Template, Message, One-Pager, Video, Brand
 - Cards use `components/content/AssetCard.tsx` — custom SVG icon per category, type badge (`#F0EBE3` pill, 10px Inter 700 uppercase `#4B0214`), title, description, date, action button. Card is fully clickable (opens `AssetModal`); action button click is wrapped in `stopPropagation`.
 - Action logic: Email Template + Message → Copy to Clipboard (copies `copyableText`, shows "Copied!" 2s); One-Pager + Brand + Video → Download (links to `file.asset.url` with `download` attribute)
 - Video no longer uses inline embed — treated as a downloadable file
@@ -231,7 +234,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 - **report**: `title, slug, publishedDate, quarter (Q1|Q2|Q3|Q4 — radio, required), year (number, required), coverImage, summary, body, pdfDownload`
 - **article**: `title, slug, publishedDate, category (Strategy|Engineering|Design|AI|Salesforce), coverImage, summary, body, featured`
-- **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, faq[] { question, answer }, format (longform|pitching-resource — radio), description (text), resourceUrl (url), resourceLabel (string), tldr (array of string), whenToUse (string), order`
+- **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
 - **asset**: `title, description, category (Email Template|Message|One-Pager|Slide Deck|Video|Brand), file, videoUrl, thumbnail, copyableText`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
 - **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured`
@@ -343,16 +346,6 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ---
 
-## next.config.mjs — Image Remote Patterns
-
-`next/image` is configured to proxy images from:
-- `cdn.sanity.io` — Sanity-hosted assets
-- `docs.google.com`, `lh3.googleusercontent.com`, `drive.google.com` — Google Slides/Drive thumbnails
-
-Add new hostnames here before using `<Image>` with any external domain.
-
----
-
 ## Key Architectural Rules
 
 - **Sanity only for CMS content** (articles, reports, playbook, assets, events, case studies). Never store this in Supabase.
@@ -367,7 +360,7 @@ Add new hostnames here before using `<Image>` with any external domain.
 
 ## Outstanding Work
 
-- **`components/dashboard/`** — `EventCardActions` client component added (handles RSVP `window.open` + `stopPropagation` for the event card); `StatCard` and `QuickActions` files may be stale/unused after dashboard redesign
+- **`components/dashboard/`** — `EventCardActions` client component (handles RSVP `window.open` + `stopPropagation`); `QuickActions` is the 3-card action row on the dashboard; `StatCard` is unused
 - **`components/content/ReportCard.tsx`** — deleted; Reports page was rewritten as a client component with inline card rendering, making this component unused
 
 ---
