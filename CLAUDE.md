@@ -37,15 +37,17 @@ app/
   api/
     referrals/route.ts           # POST — create referral
     referrals/[id]/route.ts      # GET — fetch scout's referrals
+    favorites/route.ts           # GET — fetch scout's favorites; POST — add favorite (cap: 6)
+    favorites/[id]/route.ts      # DELETE — remove favorite
 components/
   layout/                        # Sidebar, TopNav, MobileNav
   ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal, AssetModal
-  dashboard/                     # StatCard, QuickActions
+  dashboard/                     # StatCard, QuickActions, FavoritesSection, FavoriteCard, AddFavoritesDrawer
   content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
 lib/
   sanity/                        # Sanity client + GROQ queries
-  supabase/                      # Supabase client + referral helpers
+  supabase/                      # Supabase client + referral helpers + favorites helpers
 sanity/schemas/                  # report, article, playbookPage, asset, event, caseStudy
 middleware.ts                    # Clerk auth guard
 ```
@@ -125,7 +127,7 @@ Defined in `components/ui/Badge.tsx`:
 - Title: `Welcome back [First Name].` — `text-4xl lg:text-5xl font-bold font-geist` — first name from Clerk `currentUser()`, no emoji
 - Accent underline: `border-b-2 border-cabin-flame` — `inline-block` wrapper so the underline hugs the text width
 
-**Quick Actions row** (below header, above two-column layout):
+**Quick Actions row** (below header, above Favorites):
 - `components/dashboard/QuickActions.tsx` — accepts `latestReportSlug: string | null`
 - `grid-cols-1 sm:grid-cols-3 gap-4` — three cards, each a `<Link>`
 - Card: `bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-center gap-4` + standard hover
@@ -136,6 +138,17 @@ Defined in `components/ui/Badge.tsx`:
   | Send a Referral | `Send` | `text-cabin-flame` | `bg-cabin-flame/10` | `/referrals` |
   | Find an Asset | `FolderOpen` | `text-cabin-indigo` | `bg-cabin-sky` | `/assets` |
   | Read Latest Report | `FileText` | `text-cabin-grass` | `bg-cabin-lime` | `/reports/[slug]` or `/reports` |
+
+**Favorites section** (below Quick Actions, above two-column layout):
+- `components/dashboard/FavoritesSection.tsx` — client component, receives `initialFavorites: Favorite[]` (SSR via `getFavorites(userId)`) and `scoutId: string`
+- Section header: "FAVORITES" label + "+ Add" pill (`bg-cabin-maroon text-white rounded-full text-xs px-3 py-1`)
+- Grid: `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3` — up to 6 pinned items
+- Empty state: centered card with `Bookmark` icon + "Pin your most-used content here"
+- Optimistic add/remove — POST/DELETE `/api/favorites`, revert on error
+- `components/dashboard/FavoriteCard.tsx` — icon chip (`bg-cabin-mauve p-1.5 rounded-md`) + title (`line-clamp-2`) + absolute X remove button. If favorite has a `url` field, renders as `<a target="_blank">`; otherwise `<Link>` to internal route. Icon/color by type: asset=`FolderOpen text-cabin-gold`, report=`FileText text-cabin-indigo`, case_study=`BookMarked text-cabin-flame`, playbook=`Map text-purple-400`
+- `components/dashboard/AddFavoritesDrawer.tsx` — slide-in panel (`fixed inset-y-0 right-0 w-96`, `translate-x-full → translate-x-0`), same mounted/visible animation pattern as AssetModal. Four tabs: Assets | Reports | Case Studies | Playbook. Fetches content client-side from Sanity on open/tab change. Already-favorited rows: `opacity-40`, filled `Bookmark` icon, non-clickable. Cap warning at 6/6.
+- **content_id** stored per type: asset/report/case_study → Sanity `_id`; playbook → `slug.current`
+- **url** stored for case studies (`slideUrl`) — clicking a case study favorite opens Google Slides directly in a new tab. Other types use internal routing.
 
 **Two-column layout** (`grid-cols-1 lg:grid-cols-3 gap-8`):
 
@@ -276,6 +289,12 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
   _id, title, slug, publishedDate, quarter, year, summary,
   pdfDownload { asset-> { url } }
 }
+
+// All assets (getAllAssets) — _id included for favorites support
+*[_type == "asset"] | order(_createdAt desc) {
+  _id, title, description, category, copyableText, _createdAt,
+  file { asset-> { url, originalFilename } }, thumbnail
+}
 ```
 
 ---
@@ -301,9 +320,25 @@ updated_at        timestamptz default now()
 ### Status flow (Cabin manages internally)
 `submitted` → `contacted` → `in_conversations` → `proposal_sent` → `closed_won` → `closed_lost`
 
+### `favorites` table
+
+```sql
+id            uuid primary key default gen_random_uuid()
+scout_id      text not null           -- Clerk user.id
+content_type  text not null           -- 'asset' | 'report' | 'case_study' | 'playbook'
+content_id    text not null           -- Sanity _id (assets/reports/case studies) or slug.current (playbook)
+title         text not null
+slug          text                    -- internal route slug (null for assets)
+url           text                    -- external URL (case studies → slideUrl; others null)
+created_at    timestamptz default now()
+unique (scout_id, content_id)
+```
+
+Cap: 6 favorites per scout, enforced in `POST /api/favorites` before insert.
+
 ### Row Level Security
-- Scouts can only read/insert their own rows (`scout_id = requesting_user_id()`)
-- Cabin updates status via service role key (bypasses RLS)
+- All API routes use service role key (bypasses RLS) — RLS enabled on both tables as a safety net
+- `requesting_user_id()` Clerk integration is **not** set up; policies are not active
 
 ---
 
@@ -349,7 +384,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 ## Key Architectural Rules
 
 - **Sanity only for CMS content** (articles, reports, playbook, assets, events, case studies). Never store this in Supabase.
-- **Supabase only for referral data.** Clean separation of concerns.
+- **Supabase for scout-specific data** — referrals and favorites. CMS content stays in Sanity.
 - **Clerk is the single source of truth for identity.** `user.id` is `scout_id` everywhere.
 - **No custom admin UI for MVP.** Cabin manages scouts in Clerk dashboard and referral statuses directly in Supabase.
 - **No commission tracking or payment features** — off-platform.
@@ -362,6 +397,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 - **`components/dashboard/`** — `EventCardActions` client component (handles RSVP `window.open` + `stopPropagation`); `QuickActions` is the 3-card action row on the dashboard; `StatCard` is unused
 - **`components/content/ReportCard.tsx`** — deleted; Reports page was rewritten as a client component with inline card rendering, making this component unused
+- **Case study detail pages** — `/case-studies/[slug]` does not exist; `FavoriteCard` generates that href for case study favorites without a stored `url` (legacy rows), but new favorites store `slideUrl` directly and open externally
 
 ---
 

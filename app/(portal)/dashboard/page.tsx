@@ -3,9 +3,11 @@ import { currentUser } from '@clerk/nextjs/server'
 import { BookOpen, PlayCircle } from 'lucide-react'
 import { getDashboardData } from '@/lib/sanity/queries'
 import { getReferralStats } from '@/lib/supabase/referrals'
+import { getFavorites } from '@/lib/supabase/favorites'
 import Badge from '@/components/ui/Badge'
 import EventCardActions from '@/components/dashboard/EventCardActions'
 import QuickActions from '@/components/dashboard/QuickActions'
+import FavoritesSection from '@/components/dashboard/FavoritesSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,7 +40,7 @@ export default async function DashboardPage() {
   const user = await currentUser()
   const firstName = user?.firstName ?? 'Scout'
 
-  const [_stats, dashboardData] = await Promise.all([
+  const [_stats, dashboardData, initialFavorites] = await Promise.all([
     user?.id
       ? getReferralStats(user.id).catch(() => ({ submitted: 0, active: 0, closedWon: 0 }))
       : Promise.resolve({ submitted: 0, active: 0, closedWon: 0 }),
@@ -47,6 +49,9 @@ export default async function DashboardPage() {
       upcomingEvents: [],
       activityFeed: { reports: [], articles: [], playbookPages: [], assets: [], events: [] },
     })),
+    user?.id
+      ? getFavorites(user.id).catch(() => [])
+      : Promise.resolve([]),
   ])
 
   const latestReport = dashboardData?.latestReport ?? null
@@ -84,6 +89,8 @@ export default async function DashboardPage() {
       {/* Quick Actions */}
       <QuickActions latestReportSlug={latestReport?.slug?.current ?? null} />
 
+      {/* Favorites */}
+      <FavoritesSection initialFavorites={initialFavorites} scoutId={user?.id ?? ''} />
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

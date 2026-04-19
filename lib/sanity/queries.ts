@@ -94,7 +94,7 @@ export async function getPlaybookPageBySlug(slug: string) {
 
 export async function getAllAssets(category?: string) {
   const projection = `{
-    title, description, category, copyableText, _createdAt,
+    _id, title, description, category, copyableText, _createdAt,
     file { asset-> { url, originalFilename } },
     thumbnail
   }`

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import AssetModal from '@/components/ui/AssetModal'
 
 export interface Asset {
+  _id?: string
   title: string
   description?: string
   category: string
