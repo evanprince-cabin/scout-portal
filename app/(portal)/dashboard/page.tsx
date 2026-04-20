@@ -69,7 +69,7 @@ export default async function DashboardPage() {
     .slice(0, 3)
 
   return (
-    <div className="space-y-8 page-enter">
+    <div className="page-enter">
 
       {/* Header */}
       <div>
@@ -82,21 +82,21 @@ export default async function DashboardPage() {
           <h1 className="font-geist font-bold text-4xl lg:text-5xl tracking-tight text-cabin-charcoal">
             Welcome back {firstName}.
           </h1>
-          <div className="border-b-2 border-cabin-flame mt-1 mb-8" />
+          <div className="border-b-2 border-cabin-flame mt-1" />
         </div>
       </div>
 
       {/* Quick Actions */}
-      <QuickActions latestReportSlug={latestReport?.slug?.current ?? null} />
+      <div className="mt-8">
+        <QuickActions latestReportSlug={latestReport?.slug?.current ?? null} />
+      </div>
 
-      {/* Favorites */}
-      <FavoritesSection initialFavorites={initialFavorites} scoutId={user?.id ?? ''} />
+      {/* Bookmarks */}
+      <div className="mt-16">
+        <FavoritesSection initialFavorites={initialFavorites} scoutId={user?.id ?? ''} />
+      </div>
 
-      {/* Two-column layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-
-        {/* Left column — lg:col-span-2 */}
-        <div className="xl:col-span-2 space-y-8">
+      <div className="mt-16 space-y-14">
 
           {/* Upcoming Events */}
           <section>
@@ -168,10 +168,10 @@ export default async function DashboardPage() {
             )}
           </section>
 
-          {/* Activity Feed */}
+          {/* Recently Added */}
           <section>
             <h2 className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
-              Activity Feed
+              Recently Added
             </h2>
             <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-4">
               {allActivity.length > 0 ? (
@@ -216,59 +216,58 @@ export default async function DashboardPage() {
             </div>
           </section>
 
-        </div>
 
-        {/* Right column — lg:col-span-1 */}
-        <div className="xl:col-span-1">
-          <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
-            Dive Deeper
-          </p>
-          <div className="space-y-3">
-            <a
-              href="https://www.youtube.com/@cabinco"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-start gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block"
-            >
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
-              />
-              <div className="relative z-10 flex items-start gap-4">
-                <div className="flex-shrink-0 mt-0.5">
-                  <PlayCircle size={20} className="text-cabin-stone" />
+          {/* Dive Deeper */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
+              Dive Deeper
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <a
+                href="https://www.youtube.com/@cabinco"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-start gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
+                />
+                <div className="relative z-10 flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <PlayCircle size={20} className="text-cabin-stone" />
+                  </div>
+                  <div>
+                    <p className="font-geist font-semibold text-cabin-charcoal text-base">Recorded Tech Talks</p>
+                    <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
+                      Watch previous tech talks on our Youtube channel.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-geist font-semibold text-cabin-charcoal text-base">Recorded Tech Talks</p>
-                  <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
-                    Watch previous tech talks on our Youtube channel.
-                  </p>
-                </div>
-              </div>
-            </a>
+              </a>
 
-            <Link
-              href="/playbook"
-              className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-start gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 block"
-            >
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
-              />
-              <div className="relative z-10 flex items-start gap-4">
-                <div className="flex-shrink-0 mt-0.5">
-                  <BookOpen size={20} className="text-cabin-stone" />
+              <Link
+                href="/playbook"
+                className="relative overflow-hidden group bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-start gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <div
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{ backgroundImage: 'radial-gradient(circle, #d1cdc7 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundColor: '#f9f7f5' }}
+                />
+                <div className="relative z-10 flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <BookOpen size={20} className="text-cabin-stone" />
+                  </div>
+                  <div>
+                    <p className="font-geist font-semibold text-cabin-charcoal text-base">Study the Playbook</p>
+                    <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
+                      Learn how to be the best advocate for Cabin to your network.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-geist font-semibold text-cabin-charcoal text-base">Study the Playbook</p>
-                  <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
-                    Learn how to be the best advocate for Cabin to your network.
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
+              </Link>
+            </div>
+          </section>
 
       </div>
 

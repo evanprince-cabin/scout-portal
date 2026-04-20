@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Bookmark } from 'lucide-react'
+import { BookmarkPlus } from 'lucide-react'
 import type { Favorite } from '@/lib/supabase/favorites'
 import FavoriteCard from '@/components/dashboard/FavoriteCard'
 import AddFavoritesDrawer from '@/components/dashboard/AddFavoritesDrawer'
@@ -49,39 +49,34 @@ export default function FavoritesSection({ initialFavorites, scoutId }: Favorite
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
-          Bookmarks
-        </span>
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="text-cabin-stone rounded-full text-sm font-medium px-3 py-1 font-inter hover:bg-cabin-mauve hover:text-cabin-charcoal transition-colors"
-        >
-          + Add bookmark
-        </button>
-      </div>
+      <span className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-3 block">
+        Bookmarks
+      </span>
 
-      {favorites.length === 0 ? (
-        <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 text-center">
-          <Bookmark className="w-5 h-5 text-cabin-stone/50" />
-          <p className="text-sm text-cabin-stone font-inter">Pin your most-used content here</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {favorites.map(fav => (
-            <FavoriteCard
-              key={fav.id}
-              id={fav.id}
-              title={fav.title}
-              content_type={fav.content_type as 'asset' | 'report' | 'case_study' | 'playbook'}
-              slug={fav.slug}
-              url={fav.url}
-              popular={fav.popular}
-              onRemove={handleRemove}
-            />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {favorites.map(fav => (
+          <FavoriteCard
+            key={fav.id}
+            id={fav.id}
+            title={fav.title}
+            content_type={fav.content_type as 'asset' | 'report' | 'case_study' | 'playbook'}
+            slug={fav.slug}
+            url={fav.url}
+            popular={fav.popular}
+            onRemove={handleRemove}
+          />
+        ))}
+
+        {favorites.length < 6 && (
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="bg-[#FDFDFD] border border-dashed border-cabin-stone/30 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 text-cabin-stone hover:bg-cabin-mauve/40 hover:border-cabin-stone/50 transition-all duration-150 cursor-pointer"
+          >
+            <BookmarkPlus className="w-4 h-4" />
+            <span className="font-inter text-xs">Add bookmark</span>
+          </button>
+        )}
+      </div>
 
       <AddFavoritesDrawer
         isOpen={drawerOpen}

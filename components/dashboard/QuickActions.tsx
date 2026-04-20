@@ -39,9 +39,9 @@ export default function QuickActions({ latestReportSlug }: QuickActionsProps) {
         <Link
           key={href}
           href={href}
-          className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-center gap-4 hover:shadow-md hover:border-cabin-stone/40 hover:-translate-y-0.5 transition-all duration-150"
+          className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-3 flex items-center gap-4 hover:shadow-md hover:border-cabin-stone/40 hover:-translate-y-0.5 transition-all duration-150"
         >
-          <div className={`flex-shrink-0 ${iconBg} p-2 rounded-lg`}>
+          <div className={`flex-shrink-0 ${iconBg} p-3.5 rounded-lg`}>
             <Icon className={`w-5 h-5 ${iconColor}`} />
           </div>
           <div>

@@ -126,32 +126,28 @@ Defined in `components/ui/Badge.tsx`:
 - Title: `Welcome back [First Name].` — `text-4xl lg:text-5xl font-bold font-geist` — first name from Clerk `currentUser()`, no emoji
 - Accent underline: `border-b-2 border-cabin-flame` — `inline-block` wrapper so the underline hugs the text width
 
-**Latest Report Banner** (full-width, below header):
-- Full-width `<Link>` to `/reports/[slug]` — entire card is clickable
-- `▲ Latest Report` label in `text-cabin-flame`, report title in `text-lg font-semibold`, formatted publish date below
-- Hover effect: dot-pattern radial-gradient overlay (fades in via `group-hover:opacity-100`), `hover:shadow-md`, `hover:-translate-y-0.5`, `hover:border-cabin-maroon/30`
-- Renders nothing if no report exists in Sanity
+**Page spacing** (explicit margins, not `space-y`):
+- Header → Quick Actions: `mt-8` (2rem)
+- Quick Actions → Bookmarks: `mt-16` (4rem)
+- Bookmarks → content sections: `mt-16` (4rem)
+- Between content sections (Upcoming Events / Recently Added / Dive Deeper): `space-y-14` (3.5rem)
 
-**Bookmarks section** (below Quick Actions, above two-column layout):
+**Quick Actions** (3 cards, `grid-cols-1 sm:grid-cols-3 gap-4`):
+- Each card: `py-3 px-3 rounded-2xl` — icon container `p-3.5 rounded-lg`, icon `w-5 h-5`
+
+**Bookmarks section** (below Quick Actions):
 - Labeled **Bookmarks** (`text-xs font-semibold uppercase tracking-widest text-cabin-stone`)
-- Ghost "+ Add bookmark" button (no fill, `text-cabin-stone`, `hover:bg-cabin-mauve hover:text-cabin-charcoal`, `rounded-full`)
 - Grid: `grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3` (max 6 bookmarks)
-- Empty state: Bookmark icon + "Pin your most-used content here"
-- Each `FavoriteCard`: icon + type label on one row (both `text-cabin-stone`), title below, optional "Popular with teammates" tag (`Users` icon) if `popular === true`; X remove button `absolute top-2 right-2`
-- **Default bookmark for new users**: `getFavoritesWithDefaults()` seeds the "Cabin Capabilities Overview" playbook page on first login (empty favorites → auto-insert). Returning users unaffected.
+- "Add bookmark" card renders as the last grid item when fewer than 6 bookmarks exist — dashed border (`border-dashed border-cabin-stone/30`), `BookmarkPlus` icon + "Add bookmark" label centered, `hover:bg-cabin-mauve/40`. Disappears at cap.
+- Each `FavoriteCard`: grey icon + type label inline on top row, title below, optional "Popular with teammates" tag (`Users` icon) if `popular === true`; X remove button `absolute top-2 right-2`
+- **Default bookmark for new users**: `getFavoritesWithDefaults()` seeds the "Cabin Capabilities Overview" playbook page on first login. Returning users unaffected.
 - **AddFavoritesDrawer**: slides in from right (`w-96`), tabs for Assets / Reports / Case Studies / Playbook. Already-bookmarked items show filled Bookmark icon. Items with `popular: true` show Users icon + "Popular" label. Cap at 6: shows warning, disables adding.
 - `popular` field: Sanity editors toggle per content item; flows through GROQ → drawer → API → Supabase `favorites.popular` column → card display.
 
-**Two-column layout** (`grid-cols-1 lg:grid-cols-3 gap-8`):
-
-Left column (`lg:col-span-2`):
-- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card uses `absolute inset-0 z-0` Link to detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; `EventCardActions` client component on right (handles `stopPropagation`). CTA is "View on Meetup" (opens `registrationUrl` in new tab, `ExternalLink` icon). Same dot-pattern hover as report banner. "View all events →" link in section header.
-- **Activity Feed** — card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page (assets → `/assets`). Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
-
-Right column (`lg:col-span-1`):
-- **Dive Deeper** section label (`text-xs font-semibold uppercase tracking-widest`)
-- Two stacked action cards (`space-y-3`): "Recorded Tech Talks" (PlayCircle icon → `https://www.youtube.com/@cabinco`, `target="_blank"`), "Study the Playbook" (BookOpen icon → `/playbook`). Titles are `text-base font-semibold`.
-- Same dot-pattern hover effect as report banner and event cards.
+**Single-column content sections** (full width, in order):
+- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card uses `absolute inset-0 z-0` Link to detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; `EventCardActions` client component on right (handles `stopPropagation`). "View all events →" link in section header.
+- **Recently Added** — (formerly "Activity Feed") card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page. Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
+- **Dive Deeper** — two cards side by side (`grid-cols-1 sm:grid-cols-2 gap-3`): "Recorded Tech Talks" (PlayCircle icon → `https://www.youtube.com/@cabinco`, `target="_blank"`), "Study the Playbook" (BookOpen icon → `/playbook`). Both use dot-pattern hover overlay.
 
 ### Reports (`'use client'`, client-side fetch)
 - Fetches all reports from Sanity via `getReports()` in a `useEffect`
