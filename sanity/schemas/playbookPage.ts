@@ -103,5 +103,12 @@ export const playbookPage = defineType({
       title: 'Order',
       type: 'number',
     }),
+    defineField({
+      name: 'popular',
+      title: 'Popular with teammates',
+      type: 'boolean',
+      description: "Show a \"Popular with teammates\" tag on this item's favorite card",
+      initialValue: false,
+    }),
   ],
 })

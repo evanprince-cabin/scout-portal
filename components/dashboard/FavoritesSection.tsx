@@ -15,7 +15,7 @@ export default function FavoritesSection({ initialFavorites, scoutId }: Favorite
   const [favorites, setFavorites] = useState<Favorite[]>(initialFavorites)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  async function handleAdd(item: { content_type: string; content_id: string; title: string; slug: string | null; url: string | null }) {
+  async function handleAdd(item: { content_type: string; content_id: string; title: string; slug: string | null; url: string | null; popular: boolean }) {
     const tempFav: Favorite = {
       id: 'temp-' + Math.random().toString(36).slice(2),
       scout_id: scoutId,
@@ -51,13 +51,13 @@ export default function FavoritesSection({ initialFavorites, scoutId }: Favorite
     <section>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
-          Favorites
+          Bookmarks
         </span>
         <button
           onClick={() => setDrawerOpen(true)}
-          className="bg-cabin-maroon text-white rounded-full text-xs px-3 py-1 font-inter hover:bg-cabin-charcoal transition-colors"
+          className="text-cabin-stone rounded-full text-sm font-medium px-3 py-1 font-inter hover:bg-cabin-mauve hover:text-cabin-charcoal transition-colors"
         >
-          + Add
+          + Add bookmark
         </button>
       </div>
 
@@ -67,7 +67,7 @@ export default function FavoritesSection({ initialFavorites, scoutId }: Favorite
           <p className="text-sm text-cabin-stone font-inter">Pin your most-used content here</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {favorites.map(fav => (
             <FavoriteCard
               key={fav.id}
@@ -76,6 +76,7 @@ export default function FavoritesSection({ initialFavorites, scoutId }: Favorite
               content_type={fav.content_type as 'asset' | 'report' | 'case_study' | 'playbook'}
               slug={fav.slug}
               url={fav.url}
+              popular={fav.popular}
               onRemove={handleRemove}
             />
           ))}

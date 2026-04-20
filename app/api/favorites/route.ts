@@ -24,10 +24,10 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json()
-  const { content_type, content_id, title, slug, url } = body
+  const { content_type, content_id, title, slug, url, popular } = body
 
   try {
-    const favorite = await addFavorite(userId, { content_type, content_id, title, slug: slug ?? null, url: url ?? null })
+    const favorite = await addFavorite(userId, { content_type, content_id, title, slug: slug ?? null, url: url ?? null, popular: popular ?? false })
     return NextResponse.json(favorite, { status: 201 })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

@@ -67,5 +67,12 @@ export const report = defineType({
       title: 'PDF Download',
       type: 'file',
     }),
+    defineField({
+      name: 'popular',
+      title: 'Popular with teammates',
+      type: 'boolean',
+      description: "Show a \"Popular with teammates\" tag on this item's favorite card",
+      initialValue: false,
+    }),
   ],
 })

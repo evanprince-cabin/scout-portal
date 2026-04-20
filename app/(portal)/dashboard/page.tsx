@@ -3,7 +3,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { BookOpen, PlayCircle } from 'lucide-react'
 import { getDashboardData } from '@/lib/sanity/queries'
 import { getReferralStats } from '@/lib/supabase/referrals'
-import { getFavorites } from '@/lib/supabase/favorites'
+import { getFavoritesWithDefaults } from '@/lib/supabase/favorites'
 import Badge from '@/components/ui/Badge'
 import EventCardActions from '@/components/dashboard/EventCardActions'
 import QuickActions from '@/components/dashboard/QuickActions'
@@ -50,7 +50,7 @@ export default async function DashboardPage() {
       activityFeed: { reports: [], articles: [], playbookPages: [], assets: [], events: [] },
     })),
     user?.id
-      ? getFavorites(user.id).catch(() => [])
+      ? getFavoritesWithDefaults(user.id).catch(() => [])
       : Promise.resolve([]),
   ])
 
@@ -97,54 +97,6 @@ export default async function DashboardPage() {
 
         {/* Left column — lg:col-span-2 */}
         <div className="xl:col-span-2 space-y-8">
-
-          {/* Activity Feed */}
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
-              Activity Feed
-            </h2>
-            <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-4">
-              {allActivity.length > 0 ? (
-                <div>
-                  {allActivity.map((item: any, index: number) => {
-                    const isLast = index === allActivity.length - 1
-                    const href =
-                      item.contentType === 'report'       ? `/reports/${item.slug?.current}` :
-                      item.contentType === 'article'      ? `/articles/${item.slug?.current}` :
-                      item.contentType === 'playbookPage' ? `/playbook/${item.slug?.current}` :
-                      item.contentType === 'event'        ? `/events/${item.slug?.current}` :
-                      '/assets'
-                    return (
-                      <Link
-                        key={`${item.contentType}-${item._createdAt}`}
-                        href={href}
-                        className={`flex items-start gap-3 py-4 px-4 hover:bg-cabin-mauve/30 rounded-xl transition-colors duration-150 ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
-                      >
-                        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${activityDot[item.contentType] ?? 'bg-cabin-stone'}`} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-0.5">
-                            {activityLabel[item.contentType] ?? item.contentType}
-                          </p>
-                          <p className="font-inter text-base font-semibold text-cabin-charcoal leading-snug">
-                            {item.title}
-                          </p>
-                          <p className="text-xs font-inter text-cabin-stone mt-0.5">
-                            Added • {new Date(item._createdAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                        </div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              ) : (
-                <p className="font-inter text-cabin-stone text-sm">No recent activity.</p>
-              )}
-            </div>
-          </section>
 
           {/* Upcoming Events */}
           <section>
@@ -214,6 +166,54 @@ export default async function DashboardPage() {
             ) : (
               <p className="font-inter text-cabin-stone text-sm">No upcoming events scheduled.</p>
             )}
+          </section>
+
+          {/* Activity Feed */}
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
+              Activity Feed
+            </h2>
+            <div className="bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-4">
+              {allActivity.length > 0 ? (
+                <div>
+                  {allActivity.map((item: any, index: number) => {
+                    const isLast = index === allActivity.length - 1
+                    const href =
+                      item.contentType === 'report'       ? `/reports/${item.slug?.current}` :
+                      item.contentType === 'article'      ? `/articles/${item.slug?.current}` :
+                      item.contentType === 'playbookPage' ? `/playbook/${item.slug?.current}` :
+                      item.contentType === 'event'        ? `/events/${item.slug?.current}` :
+                      '/assets'
+                    return (
+                      <Link
+                        key={`${item.contentType}-${item._createdAt}`}
+                        href={href}
+                        className={`flex items-start gap-3 py-4 px-4 hover:bg-cabin-mauve/30 rounded-xl transition-colors duration-150 ${!isLast ? 'border-b border-cabin-stone/10' : ''}`}
+                      >
+                        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${activityDot[item.contentType] ?? 'bg-cabin-stone'}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-0.5">
+                            {activityLabel[item.contentType] ?? item.contentType}
+                          </p>
+                          <p className="font-inter text-base font-semibold text-cabin-charcoal leading-snug">
+                            {item.title}
+                          </p>
+                          <p className="text-xs font-inter text-cabin-stone mt-0.5">
+                            Added • {new Date(item._createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="font-inter text-cabin-stone text-sm">No recent activity.</p>
+              )}
+            </div>
           </section>
 
         </div>

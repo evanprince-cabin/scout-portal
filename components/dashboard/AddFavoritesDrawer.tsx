@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, FolderOpen, FileText, BookMarked, Map, Bookmark } from 'lucide-react'
+import { X, FolderOpen, FileText, BookMarked, Map, Bookmark, Users } from 'lucide-react'
 import { getAllAssets, getReports, getCaseStudies, getAllPlaybookPages } from '@/lib/sanity/queries'
 import type { Favorite } from '@/lib/supabase/favorites'
 
@@ -10,7 +10,7 @@ interface AddFavoritesDrawerProps {
   isOpen: boolean
   onClose: () => void
   favorites: Favorite[]
-  onAdd: (item: { content_type: string; content_id: string; title: string; slug: string | null; url: string | null }) => void
+  onAdd: (item: { content_type: string; content_id: string; title: string; slug: string | null; url: string | null; popular: boolean }) => void
 }
 
 const TABS = ['Assets', 'Reports', 'Case Studies', 'Playbook'] as const
@@ -21,6 +21,7 @@ type DrawerItem = {
   title: string
   slug?: { current: string }
   slideUrl?: string
+  popular?: boolean
 }
 
 const TAB_ICONS: Record<Tab, { Icon: typeof FolderOpen; color: string }> = {
@@ -111,6 +112,7 @@ export default function AddFavoritesDrawer({ isOpen, onClose, favorites, onAdd }
         title: item.title,
         slug: item.slug!.current,
         url: null,
+        popular: item.popular ?? false,
       }
     }
     if (activeTab === 'Case Studies') {
@@ -120,6 +122,7 @@ export default function AddFavoritesDrawer({ isOpen, onClose, favorites, onAdd }
         title: item.title,
         slug: item.slug?.current ?? null,
         url: item.slideUrl ?? null,
+        popular: item.popular ?? false,
       }
     }
     return {
@@ -128,6 +131,7 @@ export default function AddFavoritesDrawer({ isOpen, onClose, favorites, onAdd }
       title: item.title,
       slug: item.slug?.current ?? null,
       url: null,
+      popular: item.popular ?? false,
     }
   }
 
@@ -147,7 +151,7 @@ export default function AddFavoritesDrawer({ isOpen, onClose, favorites, onAdd }
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-cabin-stone/10">
-          <h2 className="font-geist font-semibold text-lg text-cabin-charcoal">Add a Favorite</h2>
+          <h2 className="font-geist font-semibold text-lg text-cabin-charcoal">Add a Bookmark</h2>
           <button onClick={onClose} className="text-cabin-stone hover:text-cabin-charcoal transition-colors">
             <X size={18} />
           </button>
@@ -173,7 +177,7 @@ export default function AddFavoritesDrawer({ isOpen, onClose, favorites, onAdd }
         {/* Cap warning */}
         {atCap && (
           <p className="px-5 pt-3 pb-1 text-xs text-cabin-stone font-inter">
-            6/6 saved — remove a favorite to add more
+            6/6 saved — remove a bookmark to add more
           </p>
         )}
 
@@ -208,6 +212,12 @@ export default function AddFavoritesDrawer({ isOpen, onClose, favorites, onAdd }
                     <span className="font-inter text-sm text-cabin-charcoal flex-1 min-w-0 truncate">
                       {item.title}
                     </span>
+                    {item.popular && (
+                      <span className="flex items-center gap-0.5 flex-shrink-0">
+                        <Users className="w-3 h-3 text-cabin-stone" />
+                        <span className="text-[10px] text-cabin-stone">Popular</span>
+                      </span>
+                    )}
                     {favorited && (
                       <Bookmark className="w-4 h-4 flex-shrink-0 text-cabin-maroon" fill="currentColor" />
                     )}

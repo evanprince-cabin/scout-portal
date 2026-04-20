@@ -37,7 +37,7 @@ export async function getAllReports() {
 
 export async function getReports() {
   return sanityClient.fetch(`*[_type == "report"] | order(year desc, quarter desc) {
-    _id, title, slug, publishedDate, quarter, year, summary,
+    _id, title, slug, publishedDate, quarter, year, summary, popular,
     pdfDownload { asset-> { url } }
   }`)
 }
@@ -77,7 +77,7 @@ export async function getArticleBySlug(slug: string) {
 
 export async function getAllPlaybookPages() {
   return sanityClient.fetch(`*[_type == "playbookPage"] | order(section asc, order asc) {
-    title, slug, section, order
+    title, slug, section, order, popular
   }`)
 }
 
@@ -94,7 +94,7 @@ export async function getPlaybookPageBySlug(slug: string) {
 
 export async function getAllAssets(category?: string) {
   const projection = `{
-    _id, title, description, category, copyableText, _createdAt,
+    _id, title, description, category, copyableText, _createdAt, popular,
     file { asset-> { url, originalFilename } },
     thumbnail
   }`
@@ -129,7 +129,7 @@ export async function getEventBySlug(slug: string) {
 
 export async function getCaseStudies() {
   return sanityClient.fetch(`*[_type == "caseStudy"] | order(_createdAt desc) {
-    _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured
+    _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured, popular
   }`)
 }
 

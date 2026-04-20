@@ -52,5 +52,12 @@ export const asset = defineType({
       title: 'Copyable Text',
       type: 'text',
     }),
+    defineField({
+      name: 'popular',
+      title: 'Popular with teammates',
+      type: 'boolean',
+      description: "Show a \"Popular with teammates\" tag on this item's favorite card",
+      initialValue: false,
+    }),
   ],
 })

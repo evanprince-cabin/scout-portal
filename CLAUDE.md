@@ -4,6 +4,7 @@ A gated web portal for Cabin's external referral partners ("scouts"). Scouts sub
 
 ---
 
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -37,12 +38,12 @@ app/
   api/
     referrals/route.ts           # POST — create referral
     referrals/[id]/route.ts      # GET — fetch scout's referrals
-    favorites/route.ts           # GET — fetch scout's favorites; POST — add favorite (cap: 6)
-    favorites/[id]/route.ts      # DELETE — remove favorite
+    favorites/route.ts           # GET — fetch bookmarks; POST — add bookmark
+    favorites/[id]/route.ts      # DELETE — remove bookmark
 components/
   layout/                        # Sidebar, TopNav, MobileNav
   ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal, AssetModal
-  dashboard/                     # StatCard, QuickActions, FavoritesSection, FavoriteCard, AddFavoritesDrawer
+  dashboard/                     # FavoritesSection, FavoriteCard, AddFavoritesDrawer, EventCardActions, QuickActions
   content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
 lib/
@@ -90,8 +91,6 @@ MY SCOUT
 - `cabin-flame` — accent color (underlines, icon highlights)
 - `cabin-sky` / `cabin-indigo` — report/blue accent
 - `cabin-gold` — asset/download accent
-- `cabin-lime` / `cabin-grass` — green accent (Quick Actions, success states)
-- `cabin-lilac` / `cabin-mulberry` — purple accent
 
 ### Layout
 - **Sidebar**: `w-60`, `bg-cabin-linen`, fixed left, hidden on mobile. Active nav item: `bg-cabin-maroon text-white rounded-full`.
@@ -123,38 +122,31 @@ Defined in `components/ui/Badge.tsx`:
 ### Dashboard (`force-dynamic`, SSR)
 
 **Header:**
-- Top row: `FIELD STATUS • Q1 2026` label (`text-xs font-semibold uppercase tracking-widest`)
+- Top row: `FIELD STATUS • Q1 2026` label (left, `text-xs font-semibold uppercase tracking-widest`) + `Send a Referral →` pill button linking to `/referrals` (right, `bg-cabin-maroon rounded-full`)
 - Title: `Welcome back [First Name].` — `text-4xl lg:text-5xl font-bold font-geist` — first name from Clerk `currentUser()`, no emoji
 - Accent underline: `border-b-2 border-cabin-flame` — `inline-block` wrapper so the underline hugs the text width
 
-**Quick Actions row** (below header, above Favorites):
-- `components/dashboard/QuickActions.tsx` — accepts `latestReportSlug: string | null`
-- `grid-cols-1 sm:grid-cols-3 gap-4` — three cards, each a `<Link>`
-- Card: `bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-5 flex items-center gap-4` + standard hover
-- Each card: icon chip (`flex-shrink-0 p-2 rounded-lg`, icon `w-5 h-5`) + stacked title/description
-- Three actions and their color theming:
-  | Action | Icon | Icon color | Icon bg | href |
-  |---|---|---|---|---|
-  | Send a Referral | `Send` | `text-cabin-flame` | `bg-cabin-flame/10` | `/referrals` |
-  | Find an Asset | `FolderOpen` | `text-cabin-indigo` | `bg-cabin-sky` | `/assets` |
-  | Read Latest Report | `FileText` | `text-cabin-grass` | `bg-cabin-lime` | `/reports/[slug]` or `/reports` |
+**Latest Report Banner** (full-width, below header):
+- Full-width `<Link>` to `/reports/[slug]` — entire card is clickable
+- `▲ Latest Report` label in `text-cabin-flame`, report title in `text-lg font-semibold`, formatted publish date below
+- Hover effect: dot-pattern radial-gradient overlay (fades in via `group-hover:opacity-100`), `hover:shadow-md`, `hover:-translate-y-0.5`, `hover:border-cabin-maroon/30`
+- Renders nothing if no report exists in Sanity
 
-**Favorites section** (below Quick Actions, above two-column layout):
-- `components/dashboard/FavoritesSection.tsx` — client component, receives `initialFavorites: Favorite[]` (SSR via `getFavorites(userId)`) and `scoutId: string`
-- Section header: "FAVORITES" label + "+ Add" pill (`bg-cabin-maroon text-white rounded-full text-xs px-3 py-1`)
-- Grid: `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3` — up to 6 pinned items
-- Empty state: centered card with `Bookmark` icon + "Pin your most-used content here"
-- Optimistic add/remove — POST/DELETE `/api/favorites`, revert on error
-- `components/dashboard/FavoriteCard.tsx` — icon chip (`bg-cabin-mauve p-1.5 rounded-md`) + title (`line-clamp-2`) + absolute X remove button. If favorite has a `url` field, renders as `<a target="_blank">`; otherwise `<Link>` to internal route. Icon/color by type: asset=`FolderOpen text-cabin-gold`, report=`FileText text-cabin-indigo`, case_study=`BookMarked text-cabin-flame`, playbook=`Map text-purple-400`
-- `components/dashboard/AddFavoritesDrawer.tsx` — slide-in panel (`fixed inset-y-0 right-0 w-96`, `translate-x-full → translate-x-0`), same mounted/visible animation pattern as AssetModal. Four tabs: Assets | Reports | Case Studies | Playbook. Fetches content client-side from Sanity on open/tab change. Already-favorited rows: `opacity-40`, filled `Bookmark` icon, non-clickable. Cap warning at 6/6.
-- **content_id** stored per type: asset/report/case_study → Sanity `_id`; playbook → `slug.current`
-- **url** stored for case studies (`slideUrl`) — clicking a case study favorite opens Google Slides directly in a new tab. Other types use internal routing.
+**Bookmarks section** (below Quick Actions, above two-column layout):
+- Labeled **Bookmarks** (`text-xs font-semibold uppercase tracking-widest text-cabin-stone`)
+- Ghost "+ Add bookmark" button (no fill, `text-cabin-stone`, `hover:bg-cabin-mauve hover:text-cabin-charcoal`, `rounded-full`)
+- Grid: `grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3` (max 6 bookmarks)
+- Empty state: Bookmark icon + "Pin your most-used content here"
+- Each `FavoriteCard`: icon + type label on one row (both `text-cabin-stone`), title below, optional "Popular with teammates" tag (`Users` icon) if `popular === true`; X remove button `absolute top-2 right-2`
+- **Default bookmark for new users**: `getFavoritesWithDefaults()` seeds the "Cabin Capabilities Overview" playbook page on first login (empty favorites → auto-insert). Returning users unaffected.
+- **AddFavoritesDrawer**: slides in from right (`w-96`), tabs for Assets / Reports / Case Studies / Playbook. Already-bookmarked items show filled Bookmark icon. Items with `popular: true` show Users icon + "Popular" label. Cap at 6: shows warning, disables adding.
+- `popular` field: Sanity editors toggle per content item; flows through GROQ → drawer → API → Supabase `favorites.popular` column → card display.
 
 **Two-column layout** (`grid-cols-1 lg:grid-cols-3 gap-8`):
 
 Left column (`lg:col-span-2`):
-- **Activity Feed** — card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page (assets → `/assets`). Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
 - **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card uses `absolute inset-0 z-0` Link to detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; `EventCardActions` client component on right (handles `stopPropagation`). CTA is "View on Meetup" (opens `registrationUrl` in new tab, `ExternalLink` icon). Same dot-pattern hover as report banner. "View all events →" link in section header.
+- **Activity Feed** — card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page (assets → `/assets`). Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
 
 Right column (`lg:col-span-1`):
 - **Dive Deeper** section label (`text-xs font-semibold uppercase tracking-widest`)
@@ -245,12 +237,14 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 ### Schemas
 
-- **report**: `title, slug, publishedDate, quarter (Q1|Q2|Q3|Q4 — radio, required), year (number, required), coverImage, summary, body, pdfDownload`
+- **report**: `title, slug, publishedDate, quarter (Q1|Q2|Q3|Q4 — radio, required), year (number, required), coverImage, summary, body, pdfDownload, popular`
 - **article**: `title, slug, publishedDate, category (Strategy|Engineering|Design|AI|Salesforce), coverImage, summary, body, featured`
-- **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order`
-- **asset**: `title, description, category (Email Template|Message|One-Pager|Slide Deck|Video|Brand), file, videoUrl, thumbnail, copyableText`
+- **playbookPage**: `title, slug, section (Pitching|ICP|Objections|FAQ|Competitive), body, order, popular`
+- **asset**: `title, description, category (Email Template|Message|One-Pager|Slide Deck|Video|Brand), file, videoUrl, thumbnail, copyableText, popular`
 - **event**: `title, slug, eventType (Webinar|In-Person|Workshop|Conference), date, endDate, location, registrationUrl, coverImage, summary, body, featured`
-- **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured`
+- **caseStudy**: `title, slug, client, description, industry (array of string — Aviation|Healthcare|Non-Profit|Professional Services|Technology|Retail), serviceType (array of string — Strategy & Innovation|Product Design|Software Engineering|Salesforce & Business Systems), coverImage, slideUrl (Google Slides share URL), featured, popular`
+
+`popular` (boolean, default `false`) — when `true`, shows a "Popular with teammates" tag on the bookmark card and a "Popular" indicator in the Add Bookmark drawer. Supported on: report, playbookPage, asset, caseStudy.
 
 ### Key GROQ Queries
 
@@ -271,12 +265,12 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 // Articles filtered by category
 *[_type == "article" && category == $category] | order(publishedDate desc) { title, slug, publishedDate, category, summary, coverImage, featured }
 
-// Playbook pages
-*[_type == "playbookPage"] | order(section asc, order asc) { title, slug, section, order }
+// Playbook pages (getAllPlaybookPages)
+*[_type == "playbookPage"] | order(section asc, order asc) { title, slug, section, order, popular }
 
 // All case studies (getCaseStudies)
 *[_type == "caseStudy"] | order(_createdAt desc) {
-  _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured
+  _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured, popular
 }
 
 // Featured case studies (getFeaturedCaseStudies)
@@ -286,13 +280,13 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 // All reports for Reports page (getReports)
 *[_type == "report"] | order(year desc, quarter desc) {
-  _id, title, slug, publishedDate, quarter, year, summary,
+  _id, title, slug, publishedDate, quarter, year, summary, popular,
   pdfDownload { asset-> { url } }
 }
 
-// All assets (getAllAssets) — _id included for favorites support
-*[_type == "asset"] | order(_createdAt desc) {
-  _id, title, description, category, copyableText, _createdAt,
+// All assets (getAllAssets)
+*[_type == "asset"] {
+  _id, title, description, category, copyableText, _createdAt, popular,
   file { asset-> { url, originalFilename } }, thumbnail
 }
 ```
@@ -300,6 +294,24 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 ---
 
 ## Database — Supabase
+
+### `favorites` table
+
+```sql
+id            uuid primary key default gen_random_uuid()
+scout_id      text not null           -- Clerk user.id
+content_type  text not null           -- 'asset' | 'report' | 'case_study' | 'playbook'
+content_id    text not null           -- Sanity _id (asset/report/caseStudy) or slug (playbook)
+title         text not null
+slug          text                    -- null for assets
+url           text                    -- slideUrl for case studies, null otherwise
+popular       boolean not null default false
+created_at    timestamptz default now()
+```
+
+- Max 6 bookmarks per scout (enforced in API route)
+- New users are seeded with "Cabin Capabilities Overview" playbook page via `getFavoritesWithDefaults()` in `lib/supabase/favorites.ts`
+- Helpers: `getFavorites`, `getFavoritesWithDefaults`, `addFavorite`, `removeFavorite`
 
 ### `referrals` table
 
@@ -320,25 +332,9 @@ updated_at        timestamptz default now()
 ### Status flow (Cabin manages internally)
 `submitted` → `contacted` → `in_conversations` → `proposal_sent` → `closed_won` → `closed_lost`
 
-### `favorites` table
-
-```sql
-id            uuid primary key default gen_random_uuid()
-scout_id      text not null           -- Clerk user.id
-content_type  text not null           -- 'asset' | 'report' | 'case_study' | 'playbook'
-content_id    text not null           -- Sanity _id (assets/reports/case studies) or slug.current (playbook)
-title         text not null
-slug          text                    -- internal route slug (null for assets)
-url           text                    -- external URL (case studies → slideUrl; others null)
-created_at    timestamptz default now()
-unique (scout_id, content_id)
-```
-
-Cap: 6 favorites per scout, enforced in `POST /api/favorites` before insert.
-
 ### Row Level Security
-- All API routes use service role key (bypasses RLS) — RLS enabled on both tables as a safety net
-- `requesting_user_id()` Clerk integration is **not** set up; policies are not active
+- Scouts can only read/insert their own rows (`scout_id = requesting_user_id()`)
+- Cabin updates status via service role key (bypasses RLS)
 
 ---
 
@@ -384,7 +380,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 ## Key Architectural Rules
 
 - **Sanity only for CMS content** (articles, reports, playbook, assets, events, case studies). Never store this in Supabase.
-- **Supabase for scout-specific data** — referrals and favorites. CMS content stays in Sanity.
+- **Supabase only for referral data.** Clean separation of concerns.
 - **Clerk is the single source of truth for identity.** `user.id` is `scout_id` everywhere.
 - **No custom admin UI for MVP.** Cabin manages scouts in Clerk dashboard and referral statuses directly in Supabase.
 - **No commission tracking or payment features** — off-platform.
@@ -395,9 +391,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Outstanding Work
 
-- **`components/dashboard/`** — `EventCardActions` client component (handles RSVP `window.open` + `stopPropagation`); `QuickActions` is the 3-card action row on the dashboard; `StatCard` is unused
+- **`components/dashboard/`** — `EventCardActions` client component added (handles RSVP `window.open` + `stopPropagation` for the event card); `StatCard` and `QuickActions` files may be stale/unused after dashboard redesign
 - **`components/content/ReportCard.tsx`** — deleted; Reports page was rewritten as a client component with inline card rendering, making this component unused
-- **Case study detail pages** — `/case-studies/[slug]` does not exist; `FavoriteCard` generates that href for case study favorites without a stored `url` (legacy rows), but new favorites store `slideUrl` directly and open externally
 
 ---
 
