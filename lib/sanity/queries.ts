@@ -6,7 +6,7 @@ export async function getDashboardData() {
       title, slug, publishedDate, quarter, year, summary, coverImage
     },
     "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] {
-      title, slug, date, eventType, location, registrationUrl, summary
+      title, slug, date, endDate, eventType, location, registrationUrl, summary, coverImage
     },
     "activityFeed": {
       "reports": *[_type == "report"] | order(_createdAt desc) [0..2] {

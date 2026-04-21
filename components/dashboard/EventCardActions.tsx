@@ -15,7 +15,7 @@ export default function EventCardActions({ eventSlug, registrationUrl }: EventCa
 {registrationUrl && (
         <button
           onClick={() => window.open(registrationUrl, '_blank', 'noopener,noreferrer')}
-          className="inline-flex items-center justify-center gap-1 rounded-full px-4 py-1.5 text-sm font-inter font-medium bg-cabin-maroon text-white hover:bg-cabin-charcoal transition-colors duration-150 whitespace-nowrap"
+          className="inline-flex items-center justify-center gap-1 rounded-full px-4 py-1.5 text-sm font-inter font-medium bg-cabin-linen text-cabin-charcoal hover:bg-cabin-sky transition-colors duration-150 whitespace-nowrap"
         >
           View on Meetup <ExternalLink size={14} strokeWidth={2.5} />
         </button>

@@ -4,21 +4,11 @@ import { BookOpen, PlayCircle } from 'lucide-react'
 import { getDashboardData } from '@/lib/sanity/queries'
 import { getReferralStats } from '@/lib/supabase/referrals'
 import { getFavoritesWithDefaults } from '@/lib/supabase/favorites'
-import Badge from '@/components/ui/Badge'
-import EventCardActions from '@/components/dashboard/EventCardActions'
 import QuickActions from '@/components/dashboard/QuickActions'
 import FavoritesSection from '@/components/dashboard/FavoritesSection'
+import DashboardEventsSection from '@/components/dashboard/DashboardEventsSection'
 
 export const dynamic = 'force-dynamic'
-
-type BadgeVariant = 'strategy' | 'engineering' | 'design' | 'ai' | 'salesforce' | 'webinar' | 'in-person' | 'workshop' | 'conference' | 'stone'
-
-const eventTypeVariant: Record<string, BadgeVariant> = {
-  Webinar:     'webinar',
-  'In-Person': 'in-person',
-  Workshop:    'workshop',
-  Conference:  'conference',
-}
 
 const activityDot: Record<string, string> = {
   report:       'bg-cabin-indigo',
@@ -104,68 +94,17 @@ export default async function DashboardPage() {
               <h2 className="text-xs font-semibold uppercase tracking-widest text-cabin-stone">
                 Upcoming Events
               </h2>
-              <Link
-                href="/events"
+              <a
+                href="https://www.meetup.com/tech-talks-charlotte/events/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="font-inter text-xs font-semibold uppercase tracking-widest text-cabin-maroon hover:text-cabin-charcoal transition-colors"
               >
                 View all events →
-              </Link>
+              </a>
             </div>
 
-            {upcomingEvents.length > 0 ? (
-              <div className="space-y-4">
-                {upcomingEvents.map((event: any) => {
-                  const eventDate = new Date(event.date)
-                  const dayNum = eventDate.toLocaleDateString('en-US', { day: 'numeric' })
-                  const monthAbbr = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
-                  const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                  const locationLabel =
-                    event.location &&
-                    event.location.trim().toLowerCase() !== 'virtual' &&
-                    event.location.trim() !== ''
-                      ? event.location
-                      : 'Virtual'
-                  const variant: BadgeVariant = eventTypeVariant[event.eventType] ?? 'stone'
-
-                  return (
-                    <div key={event.slug.current} className="relative overflow-hidden bg-[#FDFDFD] border border-cabin-stone/20 rounded-2xl p-6 flex flex-wrap gap-4 hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
-                      <Link href={`/events/${event.slug.current}`} className="absolute inset-0 z-0" aria-label={event.title} />
-
-                      {/* Date block + Event details — always side by side */}
-                      <div className="flex gap-4 flex-1 min-w-0">
-                        <div className="flex-shrink-0 bg-cabin-mauve rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
-                          <span className="font-geist font-bold text-2xl text-cabin-charcoal leading-none">{dayNum}</span>
-                          <span className="font-inter text-xs font-semibold text-cabin-stone mt-0.5">{monthAbbr}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                            <Badge variant={variant}>{event.eventType}</Badge>
-                            <span className="inline-flex items-center text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-0.5 rounded-full">
-                              {locationLabel}
-                            </span>
-                          </div>
-                          <h3 className="font-geist font-semibold text-cabin-charcoal text-base leading-snug mb-1">
-                            {event.title}
-                          </h3>
-                          <p className="text-xs font-inter text-cabin-stone mb-1.5">{timeStr} · {locationLabel}</p>
-                          {event.summary && (
-                            <p className="text-sm font-inter text-cabin-stone line-clamp-2">{event.summary}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <EventCardActions
-                        eventSlug={event.slug.current}
-                        registrationUrl={event.registrationUrl}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <p className="font-inter text-cabin-stone text-sm">No upcoming events scheduled.</p>
-            )}
+            <DashboardEventsSection events={upcomingEvents} />
           </section>
 
           {/* Recently Added */}
@@ -239,7 +178,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="font-geist font-semibold text-cabin-charcoal text-base">Recorded Tech Talks</p>
-                    <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
+                    <p className="mt-0.5 font-inter text-cabin-stone text-sm leading-relaxed">
                       Watch previous tech talks on our Youtube channel.
                     </p>
                   </div>
@@ -260,7 +199,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <p className="font-geist font-semibold text-cabin-charcoal text-base">Study the Playbook</p>
-                    <p className="mt-0.5 font-inter text-cabin-stone text-xs leading-relaxed">
+                    <p className="mt-0.5 font-inter text-cabin-stone text-sm leading-relaxed">
                       Learn how to be the best advocate for Cabin to your network.
                     </p>
                   </div>
