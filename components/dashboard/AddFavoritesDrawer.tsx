@@ -26,7 +26,7 @@ type DrawerItem = {
 
 const TAB_ICONS: Record<Tab, { Icon: typeof FolderOpen; color: string }> = {
   'Assets':       { Icon: FolderOpen, color: 'text-cabin-gold' },
-  'Reports':      { Icon: FileText,   color: 'text-cabin-indigo' },
+  'Reports':      { Icon: FileText,   color: 'text-cabin-maroon' },
   'Case Studies': { Icon: BookMarked, color: 'text-cabin-flame' },
   'Playbook':     { Icon: Map,        color: 'text-purple-400' },
 }

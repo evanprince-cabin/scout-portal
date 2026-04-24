@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UserButton, useUser } from '@clerk/nextjs'
 import {
   LayoutDashboard,
@@ -25,10 +25,10 @@ const navSections = [
   {
     label: 'RESOURCES',
     items: [
-      { href: '/reports', label: 'Reports', icon: FileText },
       { href: '/case-studies', label: 'Case Studies', icon: BookMarked },
       { href: '/playbook', label: 'Playbook', icon: Map },
       { href: '/assets', label: 'Assets', icon: FolderOpen },
+      { href: '/reports', label: 'Reports', icon: FileText },
     ],
   },
   {
@@ -61,9 +61,35 @@ function CloseIcon() {
   )
 }
 
-function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
+const LS_KEY = 'cabin_last_viewed_reports'
+
+function SidebarContent({
+  onLinkClick,
+  latestReportCreatedAt,
+}: {
+  onLinkClick?: () => void
+  latestReportCreatedAt: string | null
+}) {
   const pathname = usePathname()
   const { user } = useUser()
+  const [hasNewReport, setHasNewReport] = useState(false)
+
+  // Check for new report on mount
+  useEffect(() => {
+    if (!latestReportCreatedAt) return
+    const lastViewed = localStorage.getItem(LS_KEY)
+    if (!lastViewed || new Date(latestReportCreatedAt) > new Date(lastViewed)) {
+      setHasNewReport(true)
+    }
+  }, [latestReportCreatedAt])
+
+  // Clear dot when scout visits /reports
+  useEffect(() => {
+    if (pathname === '/reports' || pathname.startsWith('/reports/')) {
+      localStorage.setItem(LS_KEY, new Date().toISOString())
+      setHasNewReport(false)
+    }
+  }, [pathname])
 
   return (
     <div className="flex flex-col h-full">
@@ -95,11 +121,11 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                       }
                     `}
                   >
-                    <Icon
-                      size={16}
-                      className="text-current"
-                    />
-                    {label}
+                    <Icon size={16} className="text-current" />
+                    <span className="flex-1">{label}</span>
+                    {href === '/reports' && hasNewReport && (
+                      <span className="w-2 h-2 rounded-full bg-cabin-maroon flex-shrink-0" />
+                    )}
                   </Link>
                 )
               })}
@@ -121,14 +147,14 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   )
 }
 
-export default function Sidebar() {
+export default function Sidebar({ latestReportCreatedAt }: { latestReportCreatedAt: string | null }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 bg-cabin-linen z-30">
-        <SidebarContent />
+        <SidebarContent latestReportCreatedAt={latestReportCreatedAt} />
       </aside>
 
       {/* Mobile top bar */}
@@ -160,7 +186,7 @@ export default function Sidebar() {
             >
               <CloseIcon />
             </button>
-            <SidebarContent onLinkClick={() => setMobileOpen(false)} />
+            <SidebarContent onLinkClick={() => setMobileOpen(false)} latestReportCreatedAt={latestReportCreatedAt} />
           </aside>
         </div>
       )}

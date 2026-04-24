@@ -40,10 +40,11 @@ app/
     referrals/[id]/route.ts      # GET — fetch scout's referrals
     favorites/route.ts           # GET — fetch bookmarks; POST — add bookmark
     favorites/[id]/route.ts      # DELETE — remove bookmark
+    user/welcome/route.ts        # PATCH — set publicMetadata.hasSeenWelcome = true in Clerk
 components/
   layout/                        # Sidebar, TopNav, MobileNav
-  ui/                            # Badge, Button, Card, Skeleton, Toast (fixed top-right), EmptyState, CopyButton, ShareButton, EventModal, AssetModal, ReplaceBookmarkModal
-  dashboard/                     # FavoritesSection, FavoriteCard, AddFavoritesDrawer, EventCardActions, QuickActions, DashboardEventsSection
+  ui/                            # Badge, Button, Card, Skeleton, Toast (fixed top-right), EmptyState, CopyButton, ShareButton, EventModal, AssetModal, ReplaceBookmarkModal, WelcomeModal
+  dashboard/                     # FavoritesSection, FavoriteCard, AddFavoritesDrawer, EventCardActions, QuickActions, DashboardEventsSection, WelcomeController
   content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
 lib/
@@ -64,10 +65,10 @@ OVERVIEW
   Home               /dashboard       LayoutDashboard
 
 RESOURCES
-  Reports            /reports         FileText
   Case Studies       /case-studies    BookMarked
   Playbook           /playbook        Map
   Assets             /assets          FolderOpen
+  Reports            /reports         FileText
 
 COMMUNITY
   Events             /events          Calendar
@@ -75,6 +76,8 @@ COMMUNITY
 MY SCOUT
   Referrals          /referrals       Send
 ```
+
+**Reports alert indicator**: `Sidebar` receives `latestReportCreatedAt: string | null` from the async `PortalLayout`. On mount, `SidebarContent` compares it against `cabin_last_viewed_reports` in `localStorage`. If the report is newer, a small `bg-cabin-maroon` dot appears on the Reports nav item. The dot clears when the scout visits `/reports` or `/reports/*`, which also writes the current timestamp to `localStorage`.
 
 **Articles has been removed from the sidebar nav.** The articles route (`/articles`) still exists but is no longer linked in navigation.
 
@@ -108,7 +111,7 @@ MY SCOUT
 Defined in `components/ui/Badge.tsx`:
 - Referral status: `submitted` = gray, `contacted` = blue, `in_conversations` = yellow, `proposal_sent` = purple, `closed_won` = green, `closed_lost` = red
 - Article category: `strategy`, `engineering`, `design`, `ai`, `salesforce`
-- Event type: `webinar`, `in-person` (`bg-[#DCEFE3] text-[#193B2E]`), `workshop`, `conference`
+- Event type: `webinar`, `in-person` (`bg-cabin-linen text-cabin-stone`), `workshop`, `conference`
 - Fallback: `stone`
 
 ### Cards
@@ -120,6 +123,16 @@ Defined in `components/ui/Badge.tsx`:
 ## Page Specs
 
 ### Dashboard (`force-dynamic`, SSR)
+
+**Welcome Modal** (`components/ui/WelcomeModal.tsx`):
+- Shown on first login only — reads `user.publicMetadata.hasSeenWelcome` via Clerk `currentUser()` in the server component; if falsy, `WelcomeController` (`components/dashboard/WelcomeController.tsx`) renders the modal with `isOpen={true}`
+- `WelcomeController` is a thin `'use client'` wrapper that holds `useState(show)` and passes it to `WelcomeModal`
+- Modal renders via `createPortal` at `document.body`, `z-[200]`. Backdrop `bg-black/80` — clicking backdrop does **not** close it. No X button, no Escape key. Only the CTA dismisses.
+- Enter animation: panel scales up `scale-95 opacity-0 → scale-100 opacity-100` over 300ms
+- On CTA click: immediately plays slide-down exit (`translate-y-16 opacity-0`), fires `PATCH /api/user/welcome` in background, calls `onDismiss` after 300ms
+- CTA button: `bg-cabin-maroon`, hover `bg-[#8E5763]`
+- Layout: Cabin symbol mark + "Cabin" wordmark + `|` divider + "SCOUT PORTAL" label → headline with `scout` underlined in `border-b-2 border-cabin-flame` → body copy → 2×2 tile grid → CTA
+- Tile icons all `text-cabin-charcoal`: `Send` (Send Referrals), `BookMarked` (View Case Studies), `Layers` (Download Assets), `Map` (Learn the Playbook)
 
 **Header:**
 - Top row: `FIELD STATUS • Q1 2026` label (left, `text-xs font-semibold uppercase tracking-widest`) + `Create Referral →` pill button linking to `/referrals` (right, `bg-cabin-maroon rounded-full`)
@@ -134,6 +147,9 @@ Defined in `components/ui/Badge.tsx`:
 
 **Quick Actions** (3 cards, `grid-cols-1 sm:grid-cols-3 gap-4`):
 - Each card: `py-3 px-3 rounded-2xl` — icon container `p-3.5 rounded-lg`, icon `w-5 h-5`
+- Create Referral: `Send` icon, `text-cabin-flame`, `bg-cabin-flame/10`
+- Find an Asset: `FolderOpen` icon, `text-[#E6A100]`, `bg-[#FFB300]/10`
+- Read Latest Report: `FileText` icon, `text-cabin-maroon`, `bg-[#4B0214]/10`
 
 **Bookmarks section** (below Quick Actions):
 - Labeled **Bookmarks** (`text-xs font-semibold uppercase tracking-widest text-cabin-stone`)
@@ -145,7 +161,7 @@ Defined in `components/ui/Badge.tsx`:
 - `popular` field: Sanity editors toggle per content item; flows through GROQ → drawer → API → Supabase `favorites.popular` column → card display.
 
 **Single-column content sections** (full width, in order):
-- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Rendered by `DashboardEventsSection` client component (`components/dashboard/DashboardEventsSection.tsx`) which owns `selectedEvent` state and mounts `EventModal` — clicking a card opens the modal, does **not** navigate to the detail page. Layout: date block (`bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time · location + summary on right; `EventCardActions` on right (`stopPropagation`). "View all events →" in section header links externally to `https://www.meetup.com/tech-talks-charlotte/events/` (`target="_blank"`).
+- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Rendered by `DashboardEventsSection` client component (`components/dashboard/DashboardEventsSection.tsx`) which owns `selectedEvent` state and mounts `EventModal` — clicking a card opens the modal, does **not** navigate to the detail page. Layout: date block (`bg-[#E5EAFF] rounded-xl`) on left; event type badge + location pill + title + time · location + summary on right; `EventCardActions` on right (`stopPropagation`). "View all events →" in section header links externally to `https://www.meetup.com/tech-talks-charlotte/events/` (`target="_blank"`, hover: `text-[#8E5763]`).
 - **Recently Added** — (formerly "Activity Feed") card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page. Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
 - **Dive Deeper** — two cards side by side (`grid-cols-1 sm:grid-cols-2 gap-3`): "Recorded Tech Talks" (PlayCircle icon → `https://www.youtube.com/@cabinco`, `target="_blank"`), "Study the Playbook" (BookOpen icon → `/playbook`). Both use dot-pattern hover overlay.
 
@@ -156,9 +172,10 @@ Defined in `components/ui/Badge.tsx`:
 - Clicking the year header row toggles the section; smooth expand/collapse via CSS `grid-template-rows` transition
 - Each year section: `bg-[#F6F6F7] rounded-2xl`, header shows year label (`font-geist font-bold text-2xl text-cabin-maroon`) + `ChevronUp`/`ChevronDown` icon
 - Cards grid: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4` — only renders cards that exist (no empty placeholders)
-- Each card: `bg-white rounded-[14px] border border-cabin-stone/20 border-l-2 border-l-cabin-flame p-5 flex flex-col gap-2 min-h-[140px]` — entire card is a `<Link>` to `/reports/[slug]`
+- Each card: `relative bg-white rounded-[14px] border border-cabin-stone/20 border-l-2 border-l-cabin-flame p-5 flex flex-col gap-2 min-h-[140px]` — entire card is a `<Link>` to `/reports/[slug]`
 - Card layout: quarter label (`font-geist font-bold text-[32px] text-cabin-flame`), title (`font-inter text-sm font-medium text-cabin-charcoal line-clamp-2`), bottom row with publish date (`text-[11px] text-[#B0ABA6]`) and PDF download link (`<a target="_blank">` with Lucide `Download` icon, `stopPropagation` so it doesn't trigger card navigation)
 - Hover: `hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`
+- **New badge**: reports with `_createdAt` newer than `cabin_last_viewed_reports` in `localStorage` show a `absolute top-3 right-3` pill — `text-cabin-maroon bg-[#4B0214]/10 border border-cabin-maroon/30 rounded-full` — labeled "New". Cleared on next visit to `/reports`.
 - Individual page: rich text + optional PDF download
 
 ### Articles (ISR 60s)
@@ -183,7 +200,7 @@ Defined in `components/ui/Badge.tsx`:
 - Fetches all events from Sanity via `getAllEvents()` in a `useEffect` (same pattern as Case Studies)
 - Upcoming first (asc), past events collapsed under toggle; filter by event type
 - Clicking a card opens `EventModal` — does **not** navigate to the detail page
-- Card style matches dashboard event cards exactly: date block (`bg-cabin-mauve rounded-xl`, large day + month abbr), event type Badge + location pill, title, time · location, summary (`line-clamp-2`); `EventCardActions` on the right ("View on Meetup" button — `bg-cabin-linen text-cabin-charcoal hover:bg-cabin-sky`, `ExternalLink` icon, `stopPropagation`)
+- Card style matches dashboard event cards exactly: date block (`bg-[#E5EAFF] rounded-xl`, large day + month abbr), event type Badge + location pill, title, time · location, summary (`line-clamp-2`); `EventCardActions` on the right ("View on Meetup" button — `bg-cabin-linen text-cabin-charcoal hover:bg-cabin-sky`, `ExternalLink` icon, `stopPropagation`)
 - Cards have `max-w-7xl` to prevent excessive stretching on wide viewports
 - Individual detail page still exists at `/events/[slug]` (ISR 60s) — accessible via "View Full Details →" in the modal or direct URL
 - `EventModal` (`components/ui/EventModal.tsx`): renders via `createPortal` at `document.body`, `z-[100]`. Props: `isOpen`, `onClose`, `title`, `slug`, `eventType`, `date`, `endDate?`, `location?`, `summary?`, `coverImage?`, `registrationUrl?`. Enter animation: backdrop fades in (`opacity-0 → opacity-100`), panel slides up (`translate-y-8 opacity-0 → translate-y-0 opacity-100`) over 300ms. Exit plays in reverse before unmounting. Escape key + backdrop click close the modal.
@@ -212,6 +229,7 @@ Defined in `components/ui/Badge.tsx`:
 - Unauthenticated users redirect to `/sign-in`
 - Access is invite-only — Cabin admin sends invite links via Clerk dashboard
 - Scout's Clerk `user.id` is used as `scout_id` in all Supabase queries
+- `publicMetadata.hasSeenWelcome` (boolean) — set via `PATCH /api/user/welcome` on first modal dismiss; controls whether `WelcomeModal` is shown
 - Clerk JWT authenticates Supabase queries via RLS
 ```typescript
 // middleware.ts
@@ -232,7 +250,7 @@ export default clerkMiddleware((auth, req) => {
 
 ## CMS — Sanity
 
-Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketing). A revalidation webhook on publish hits `/api/revalidate` to clear ISR cache.
+Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketing). A revalidation webhook on publish hits `/api/revalidate` to clear ISR cache — also calls `revalidatePath('/', 'layout')` so the portal layout's `latestReportCreatedAt` timestamp refreshes when a new report is published.
 
 ### Schemas
 
@@ -279,9 +297,12 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 
 // All reports for Reports page (getReports)
 *[_type == "report"] | order(year desc, quarter desc) {
-  _id, title, slug, publishedDate, quarter, year, summary, popular,
+  _id, title, slug, publishedDate, quarter, year, summary, popular, _createdAt,
   pdfDownload { asset-> { url } }
 }
+
+// Latest report created-at timestamp (getLatestReportCreatedAt) — used by portal layout for sidebar alert dot
+*[_type == "report"] | order(_createdAt desc) [0] { _createdAt }
 
 // All assets (getAllAssets)
 *[_type == "asset"] {

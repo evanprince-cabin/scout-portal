@@ -29,7 +29,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   ai:               'bg-orange-50 text-orange-600',
   salesforce:       'bg-cyan-50 text-cyan-600',
   webinar:          'bg-green-50 text-green-700',
-  'in-person':      'bg-[#DCEFE3] text-[#193B2E]',
+  'in-person':      'bg-cabin-linen text-cabin-stone',
   workshop:         'bg-amber-50 text-amber-700',
   conference:       'bg-indigo-50 text-indigo-600',
   brand:            'bg-yellow-50 text-yellow-700',

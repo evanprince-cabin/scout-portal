@@ -13,6 +13,7 @@ interface Report {
   quarter?: string
   year?: number
   summary?: string
+  _createdAt?: string
   pdfDownload?: { asset?: { url?: string } }
 }
 
@@ -27,9 +28,18 @@ function formatDate(dateStr?: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
+const LS_KEY = 'cabin_last_viewed_reports'
+
 export default function ReportsPage() {
   const [yearGroups, setYearGroups] = useState<YearGroup[]>([])
   const [openYears, setOpenYears] = useState<Record<number, boolean>>({})
+  const [lastViewed, setLastViewed] = useState<Date | null>(null)
+
+  // Read last-viewed timestamp before reports load so badge renders correctly
+  useEffect(() => {
+    const stored = localStorage.getItem(LS_KEY)
+    setLastViewed(stored ? new Date(stored) : null)
+  }, [])
 
   useEffect(() => {
     getReports()
@@ -91,12 +101,19 @@ export default function ReportsPage() {
                 <div className="overflow-hidden">
                 <div className="px-6 pb-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-                    {reports.map((report) => (
+                    {reports.map((report) => {
+                      const isNew = !!report._createdAt && (!lastViewed || new Date(report._createdAt) > lastViewed)
+                      return (
                       <Link
                         key={report._id}
                         href={`/reports/${report.slug.current}`}
-                        className="bg-white rounded-[14px] border border-cabin-stone/20 border-l-2 border-l-cabin-flame p-5 flex flex-col gap-2 min-h-[140px] hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                        className="relative bg-white rounded-[14px] border border-cabin-stone/20 border-l-2 border-l-cabin-flame p-5 flex flex-col gap-2 min-h-[140px] hover:border-cabin-maroon/30 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
                       >
+                        {isNew && (
+                          <span className="absolute top-3 right-3 text-[10px] font-inter font-semibold uppercase tracking-widest text-cabin-maroon bg-[#4B0214]/10 border border-cabin-maroon/30 rounded-full px-2 py-0.5">
+                            New
+                          </span>
+                        )}
                         <div>
                           <span className="font-geist font-bold text-[32px] text-cabin-flame leading-[40px] tracking-[0.5px]">
                             {report.quarter}
@@ -125,7 +142,8 @@ export default function ReportsPage() {
                           )}
                         </div>
                       </Link>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
                 </div>

@@ -37,7 +37,7 @@ export async function getAllReports() {
 
 export async function getReports() {
   return sanityClient.fetch(`*[_type == "report"] | order(year desc, quarter desc) {
-    _id, title, slug, publishedDate, quarter, year, summary, popular,
+    _id, title, slug, publishedDate, quarter, year, summary, popular, _createdAt,
     pdfDownload { asset-> { url } }
   }`)
 }
@@ -131,6 +131,13 @@ export async function getCaseStudies() {
   return sanityClient.fetch(`*[_type == "caseStudy"] | order(_createdAt desc) {
     _id, title, slug, client, description, industry, serviceType, coverImage, slideUrl, featured, popular
   }`)
+}
+
+export async function getLatestReportCreatedAt(): Promise<string | null> {
+  const result = await sanityClient.fetch<{ _createdAt: string } | null>(
+    `*[_type == "report"] | order(_createdAt desc) [0] { _createdAt }`
+  )
+  return result?._createdAt ?? null
 }
 
 export async function getFeaturedCaseStudies() {

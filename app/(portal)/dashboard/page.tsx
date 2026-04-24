@@ -7,6 +7,7 @@ import { getFavoritesWithDefaults } from '@/lib/supabase/favorites'
 import QuickActions from '@/components/dashboard/QuickActions'
 import FavoritesSection from '@/components/dashboard/FavoritesSection'
 import DashboardEventsSection from '@/components/dashboard/DashboardEventsSection'
+import WelcomeController from '@/components/dashboard/WelcomeController'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,7 @@ const activityLabel: Record<string, string> = {
 export default async function DashboardPage() {
   const user = await currentUser()
   const firstName = user?.firstName ?? 'Scout'
+  const showWelcome = !user?.publicMetadata?.hasSeenWelcome
 
   const [_stats, dashboardData, initialFavorites] = await Promise.all([
     user?.id
@@ -98,7 +100,7 @@ export default async function DashboardPage() {
                 href="https://www.meetup.com/tech-talks-charlotte/events/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-inter text-xs font-semibold uppercase tracking-widest text-cabin-maroon hover:text-cabin-charcoal transition-colors"
+                className="font-inter text-xs font-semibold uppercase tracking-widest text-cabin-maroon hover:text-[#8E5763] transition-colors"
               >
                 View all events →
               </a>
@@ -209,6 +211,8 @@ export default async function DashboardPage() {
           </section>
 
       </div>
+
+      <WelcomeController show={showWelcome} />
 
     </div>
   )

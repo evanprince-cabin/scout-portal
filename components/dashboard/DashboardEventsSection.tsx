@@ -57,7 +57,7 @@ export default function DashboardEventsSection({ events }: DashboardEventsSectio
                 onClick={() => setSelectedEvent(event)}
               >
                 <div className="flex gap-4 flex-1 min-w-0">
-                  <div className="flex-shrink-0 bg-cabin-mauve rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
+                  <div className="flex-shrink-0 bg-[#E5EAFF] rounded-xl w-14 flex flex-col items-center justify-center py-3 px-2">
                     <span className="font-geist font-bold text-2xl text-cabin-charcoal leading-none">{dayNum}</span>
                     <span className="font-inter text-xs font-semibold text-cabin-stone mt-0.5">{monthAbbr}</span>
                   </div>
