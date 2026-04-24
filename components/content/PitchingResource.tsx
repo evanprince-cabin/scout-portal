@@ -64,7 +64,7 @@ export default function PitchingResource({
       {tldr.length > 0 && (
         <div className="mt-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-cabin-stone mb-4">
-            TLDR
+            Key Points
           </p>
           <ul className="space-y-3">
             {tldr.map((point, i) => (

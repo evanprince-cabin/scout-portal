@@ -42,8 +42,8 @@ app/
     favorites/[id]/route.ts      # DELETE — remove bookmark
 components/
   layout/                        # Sidebar, TopNav, MobileNav
-  ui/                            # Badge, Button, Card, Skeleton, Toast, EmptyState, CopyButton, ShareButton, EventModal, AssetModal
-  dashboard/                     # FavoritesSection, FavoriteCard, AddFavoritesDrawer, EventCardActions, QuickActions
+  ui/                            # Badge, Button, Card, Skeleton, Toast (fixed top-right), EmptyState, CopyButton, ShareButton, EventModal, AssetModal, ReplaceBookmarkModal
+  dashboard/                     # FavoritesSection, FavoriteCard, AddFavoritesDrawer, EventCardActions, QuickActions, DashboardEventsSection
   content/                       # ArticleCard, ReportCard, EventCard, PlaybookSidebar, AssetCard, CaseStudyCard, CaseStudyFilters
   referrals/                     # ReferralForm, ReferralTable
 lib/
@@ -108,7 +108,7 @@ MY SCOUT
 Defined in `components/ui/Badge.tsx`:
 - Referral status: `submitted` = gray, `contacted` = blue, `in_conversations` = yellow, `proposal_sent` = purple, `closed_won` = green, `closed_lost` = red
 - Article category: `strategy`, `engineering`, `design`, `ai`, `salesforce`
-- Event type: `webinar`, `in-person`, `workshop`, `conference`
+- Event type: `webinar`, `in-person` (`bg-[#DCEFE3] text-[#193B2E]`), `workshop`, `conference`
 - Fallback: `stone`
 
 ### Cards
@@ -122,7 +122,7 @@ Defined in `components/ui/Badge.tsx`:
 ### Dashboard (`force-dynamic`, SSR)
 
 **Header:**
-- Top row: `FIELD STATUS • Q1 2026` label (left, `text-xs font-semibold uppercase tracking-widest`) + `Send a Referral →` pill button linking to `/referrals` (right, `bg-cabin-maroon rounded-full`)
+- Top row: `FIELD STATUS • Q1 2026` label (left, `text-xs font-semibold uppercase tracking-widest`) + `Create Referral →` pill button linking to `/referrals` (right, `bg-cabin-maroon rounded-full`)
 - Title: `Welcome back [First Name].` — `text-4xl lg:text-5xl font-bold font-geist` — first name from Clerk `currentUser()`, no emoji
 - Accent underline: `border-b-2 border-cabin-flame` — `inline-block` wrapper so the underline hugs the text width
 
@@ -145,7 +145,7 @@ Defined in `components/ui/Badge.tsx`:
 - `popular` field: Sanity editors toggle per content item; flows through GROQ → drawer → API → Supabase `favorites.popular` column → card display.
 
 **Single-column content sections** (full width, in order):
-- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Each card uses `absolute inset-0 z-0` Link to detail page. Layout: date block (large day number + month abbr in `bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time/location + summary on right; `EventCardActions` client component on right (handles `stopPropagation`). "View all events →" link in section header.
+- **Upcoming Events** — up to 2 featured upcoming events (`featured == true && date > now()`). Rendered by `DashboardEventsSection` client component (`components/dashboard/DashboardEventsSection.tsx`) which owns `selectedEvent` state and mounts `EventModal` — clicking a card opens the modal, does **not** navigate to the detail page. Layout: date block (`bg-cabin-mauve rounded-xl`) on left; event type badge + location pill + title + time · location + summary on right; `EventCardActions` on right (`stopPropagation`). "View all events →" in section header links externally to `https://www.meetup.com/tech-talks-charlotte/events/` (`target="_blank"`).
 - **Recently Added** — (formerly "Activity Feed") card (`p-4`). Merges top 3 most recently created items across all 5 Sanity types (`report`, `article`, `playbookPage`, `asset`, `event`), sorted by `_createdAt` desc in JS. Each row is a `<Link>` routing to the item's detail page. Row: colored dot + `text-xs` type label + `text-base font-semibold` title + "Added • [date]". Dot colors: report=`bg-cabin-indigo`, article=`bg-emerald-400`, playbookPage=`bg-purple-400`, asset=`bg-amber-400`, event=`bg-amber-400`. Row hover: `hover:bg-cabin-mauve/30 rounded-xl`.
 - **Dive Deeper** — two cards side by side (`grid-cols-1 sm:grid-cols-2 gap-3`): "Recorded Tech Talks" (PlayCircle icon → `https://www.youtube.com/@cabinco`, `target="_blank"`), "Study the Playbook" (BookOpen icon → `/playbook`). Both use dot-pattern hover overlay.
 
@@ -169,6 +169,7 @@ Defined in `components/ui/Badge.tsx`:
 ### Playbook (SSG + on-demand revalidation)
 - Left sidebar nav by section; rich text content per page
 - Sidebar collapses to dropdown on mobile
+- `PitchingResource` template (`components/content/PitchingResource.tsx`): renders a structured pitching resource with format, description, resource link, "Key Points" bullet list (formerly "TLDR"), and "When to use this" block
 
 ### Assets (ISR 60s)
 - Filterable grid by category: All, Email Template, Message, One-Pager, Video, Brand
@@ -182,7 +183,7 @@ Defined in `components/ui/Badge.tsx`:
 - Fetches all events from Sanity via `getAllEvents()` in a `useEffect` (same pattern as Case Studies)
 - Upcoming first (asc), past events collapsed under toggle; filter by event type
 - Clicking a card opens `EventModal` — does **not** navigate to the detail page
-- Card style matches dashboard event cards exactly: date block (`bg-cabin-mauve rounded-xl`, large day + month abbr), event type Badge + location pill, title, time · location, summary (`line-clamp-2`); `EventCardActions` on the right ("View on Meetup" button with `ExternalLink` icon + `stopPropagation`)
+- Card style matches dashboard event cards exactly: date block (`bg-cabin-mauve rounded-xl`, large day + month abbr), event type Badge + location pill, title, time · location, summary (`line-clamp-2`); `EventCardActions` on the right ("View on Meetup" button — `bg-cabin-linen text-cabin-charcoal hover:bg-cabin-sky`, `ExternalLink` icon, `stopPropagation`)
 - Cards have `max-w-7xl` to prevent excessive stretching on wide viewports
 - Individual detail page still exists at `/events/[slug]` (ISR 60s) — accessible via "View Full Details →" in the modal or direct URL
 - `EventModal` (`components/ui/EventModal.tsx`): renders via `createPortal` at `document.body`, `z-[100]`. Props: `isOpen`, `onClose`, `title`, `slug`, `eventType`, `date`, `endDate?`, `location?`, `summary?`, `coverImage?`, `registrationUrl?`. Enter animation: backdrop fades in (`opacity-0 → opacity-100`), panel slides up (`translate-y-8 opacity-0 → translate-y-0 opacity-100`) over 300ms. Exit plays in reverse before unmounting. Escape key + backdrop click close the modal.
@@ -199,7 +200,9 @@ Defined in `components/ui/Badge.tsx`:
 - Unique filter options derived via `.flatMap()` + `Array.from(new Set(...))`
 - Card grid: `grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl`
 - If no results after filtering: `EmptyState` component
-- `CaseStudyCard`: cover image (or `bg-cabin-mauve` placeholder), client label, title, description (`line-clamp-3`), industry + serviceType badges (renders defensively for both string and array), "View Case Study" `<a>` linking to `slideUrl` in new tab, "Download PDF" `<a>` (derives URL via `extractSlideUrls()` — replaces `/presentation/d/{id}` path with `/export/pdf`; hidden if ID can't be extracted)
+- `CaseStudyCard` (`'use client'`): cover image (or `bg-cabin-mauve` placeholder), client label, title, description, industry + serviceType badges, bookmark toggle button (`Bookmark` icon — filled `text-cabin-maroon` when saved, outline `text-cabin-stone` otherwise). No PDF download button. Entire card links to `slideUrl` via `absolute inset-0` overlay; bookmark button uses `pointer-events-auto relative z-[2]` to sit above.
+- **Inline bookmarking**: page fetches `/api/favorites` on mount; `handleBookmark` POSTs a new `case_study` favorite. If at the 6-bookmark cap, opens `ReplaceBookmarkModal` (`components/ui/ReplaceBookmarkModal.tsx`) instead. `handleUnbookmark` DELETEs by favorite ID. All feedback via `useToast()` — "Bookmark added.", "Bookmark replaced.", or error message.
+- `ReplaceBookmarkModal`: `createPortal` modal listing all current bookmarks with content-type icon + title. Clicking a row DELETEs that bookmark and POSTs the new one. Spinner shown on the selected row while in-flight. Escape key + backdrop click to cancel.
 
 ---
 
@@ -248,7 +251,7 @@ Sanity Studio is embedded at `/studio`. Content managed by Brad (Head of Marketi
 // Dashboard (getDashboardData)
 {
   "latestReport": *[_type == "report"] | order(publishedDate desc) [0] { title, slug, publishedDate, quarter, year, summary, coverImage },
-  "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] { title, slug, date, eventType, location, registrationUrl, summary },
+  "upcomingEvents": *[_type == "event" && featured == true && date > now()] | order(date asc) [0..1] { title, slug, date, endDate, eventType, location, registrationUrl, summary, coverImage },
   "activityFeed": {
     "reports":      *[_type == "report"]      | order(_createdAt desc) [0..2] { "contentType": "report",      title, _createdAt, slug },
     "articles":     *[_type == "article"]     | order(_createdAt desc) [0..2] { "contentType": "article",     title, _createdAt, slug },
@@ -387,7 +390,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 ## Outstanding Work
 
-- **`components/dashboard/`** — `EventCardActions` client component added (handles RSVP `window.open` + `stopPropagation` for the event card); `StatCard` and `QuickActions` files may be stale/unused after dashboard redesign
+- **`components/dashboard/`** — `StatCard` may be stale/unused after dashboard redesign
 - **`components/content/ReportCard.tsx`** — deleted; Reports page was rewritten as a client component with inline card rendering, making this component unused
 
 ---

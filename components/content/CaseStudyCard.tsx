@@ -1,5 +1,7 @@
+'use client'
+
 import Image from 'next/image'
-import { Download } from 'lucide-react'
+import { Bookmark } from 'lucide-react'
 import { urlFor } from '@/lib/sanity/image'
 
 function extractSlideUrls(slideUrl: string) {
@@ -12,6 +14,7 @@ function extractSlideUrls(slideUrl: string) {
 }
 
 interface CaseStudyCardProps {
+  _id: string
   title: string
   client: string
   description: string
@@ -20,6 +23,11 @@ interface CaseStudyCardProps {
   coverImage?: object
   slideUrl: string
   slug: { current: string }
+  popular?: boolean
+  isBookmarked: boolean
+  favoriteId: string | null
+  onBookmark: () => void
+  onUnbookmark: (favoriteId: string) => void
 }
 
 export default function CaseStudyCard({
@@ -30,6 +38,10 @@ export default function CaseStudyCard({
   serviceType,
   coverImage,
   slideUrl,
+  isBookmarked,
+  favoriteId,
+  onBookmark,
+  onUnbookmark,
 }: CaseStudyCardProps) {
   const { viewUrl, downloadUrl } = extractSlideUrls(slideUrl)
   const industryArr = Array.isArray(industry) ? industry : [industry]
@@ -95,18 +107,30 @@ export default function CaseStudyCard({
             ))}
           </div>
 
-          {downloadUrl && (
-            <a
-              href={downloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="relative z-[2] pointer-events-auto inline-flex items-center gap-1 text-sm font-inter font-semibold text-cabin-stone hover:text-cabin-maroon transition-colors duration-150"
+          <div className="flex items-center gap-4 relative z-[2] pointer-events-auto">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                if (isBookmarked && favoriteId) {
+                  onUnbookmark(favoriteId)
+                } else {
+                  onBookmark()
+                }
+              }}
+              aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+              className={`inline-flex items-center transition-colors duration-150 ${
+                isBookmarked
+                  ? 'text-cabin-maroon hover:text-cabin-stone'
+                  : 'text-cabin-stone hover:text-cabin-maroon'
+              }`}
             >
-              <Download size={12} />
-              PDF
-            </a>
-          )}
+              <Bookmark
+                size={14}
+                fill={isBookmarked ? 'currentColor' : 'none'}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
